@@ -2,7 +2,7 @@ package service
 
 import (
 	"time"
-	
+
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
 )
 
@@ -14,7 +14,7 @@ type GetUserResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func ToGetUserResponse(u *repository.User) GetUserResponse {
+func ToGetUserResponse(u repository.User) GetUserResponse {
 	return GetUserResponse{
 		ID:        u.ID,
 		Name:      u.Name,

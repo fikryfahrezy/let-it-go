@@ -20,6 +20,17 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	}
 }
 
+// CreateUser creates a new user
+// @Summary Create a new user
+// @Description Create a new user with the provided information
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body service.CreateUserRequest true "User creation request"
+// @Success 201 {object} APIResponse{data=service.GetUserResponse}
+// @Failure 400 {object} SwaggerErrorResponse
+// @Failure 500 {object} SwaggerErrorResponse
+// @Router /v1/users [post]
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	var req service.CreateUserRequest
 	if err := c.Bind(&req); err != nil {
@@ -50,6 +61,18 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	return CreatedResponse(c, "User created successfully", user)
 }
 
+// GetUser retrieves a user by ID
+// @Summary Get a user by ID
+// @Description Retrieve a user by their unique identifier
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} APIResponse{data=service.GetUserResponse}
+// @Failure 400 {object} SwaggerErrorResponse
+// @Failure 404 {object} SwaggerErrorResponse
+// @Failure 500 {object} SwaggerErrorResponse
+// @Router /v1/users/{id} [get]
 func (h *UserHandler) GetUser(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -75,6 +98,19 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 	return SuccessResponse(c, "User retrieved successfully", user)
 }
 
+// UpdateUser updates an existing user
+// @Summary Update a user
+// @Description Update an existing user with the provided information
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param user body service.UpdateUserRequest true "User update request"
+// @Success 200 {object} APIResponse{data=service.GetUserResponse}
+// @Failure 400 {object} SwaggerErrorResponse
+// @Failure 404 {object} SwaggerErrorResponse
+// @Failure 500 {object} SwaggerErrorResponse
+// @Router /v1/users/{id} [put]
 func (h *UserHandler) UpdateUser(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -118,6 +154,18 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 	return SuccessResponse(c, "User updated successfully", user)
 }
 
+// DeleteUser deletes a user by ID
+// @Summary Delete a user
+// @Description Delete a user by their unique identifier
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} APIResponse
+// @Failure 400 {object} SwaggerErrorResponse
+// @Failure 404 {object} SwaggerErrorResponse
+// @Failure 500 {object} SwaggerErrorResponse
+// @Router /v1/users/{id} [delete]
 func (h *UserHandler) DeleteUser(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -143,6 +191,17 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 	return SuccessResponse(c, "User deleted successfully", nil)
 }
 
+// ListUsers retrieves a list of users with pagination
+// @Summary List users
+// @Description Retrieve a paginated list of users
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Success 200 {object} ListAPIResponse{data=[]service.GetUserResponse}
+// @Failure 500 {object} SwaggerErrorResponse
+// @Router /v1/users [get]
 func (h *UserHandler) ListUsers(c echo.Context) error {
 	pageParam := c.QueryParam("page")
 	pageSizeParam := c.QueryParam("page_size")

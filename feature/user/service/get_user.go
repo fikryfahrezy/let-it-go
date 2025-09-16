@@ -20,7 +20,7 @@ func (s *userService) GetUserByID(ctx context.Context, id int) (GetUserResponse,
 		return GetUserResponse{}, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	if user == nil {
+	if user.ID == 0 {
 		slog.Warn("User not found",
 			slog.Int("user_id", id),
 		)

@@ -20,7 +20,7 @@ func (s *userService) UpdateUser(ctx context.Context, id int, req UpdateUserRequ
 		return UpdateUserResponse{}, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	if user == nil {
+	if user.ID == 0 {
 		slog.Warn("User not found",
 			slog.Int("user_id", id),
 		)
@@ -37,7 +37,7 @@ func (s *userService) UpdateUser(ctx context.Context, id int, req UpdateUserRequ
 			return UpdateUserResponse{}, fmt.Errorf("failed to check existing user: %w", err)
 		}
 
-		if existingUser != nil && existingUser.ID != id {
+		if existingUser.ID != 0 && existingUser.ID != id {
 			slog.Warn("Email already exists",
 				slog.String("email", req.Email),
 			)

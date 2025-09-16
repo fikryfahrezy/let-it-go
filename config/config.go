@@ -1,8 +1,10 @@
 package config
 
 import (
+	"bufio"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/fikryfahrezy/let-it-go/pkg/database"
 	"github.com/fikryfahrezy/let-it-go/pkg/logger"
@@ -20,6 +22,8 @@ type ServerConfig struct {
 }
 
 func Load() Config {
+	loadEnvFile(".env")
+	
 	return Config{
 		Server: ServerConfig{
 			Host: getEnv("SERVER_HOST", "localhost"),
@@ -49,4 +53,35 @@ func getEnvAsInt(key string, defaultValue int) int {
 		}
 	}
 	return defaultValue
+}
+
+func loadEnvFile(filename string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		value = strings.Trim(value, "\"'")
+
+		if os.Getenv(key) == "" {
+			os.Setenv(key, value)
+		}
+	}
 }

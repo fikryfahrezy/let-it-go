@@ -6,20 +6,33 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Response struct {
+// APIResponse represents a standard API response
+type APIResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
 	Error   string `json:"error,omitempty"`
 }
 
-type ListResponse struct {
+// ListAPIResponse represents a paginated API response
+type ListAPIResponse struct {
 	Success    bool   `json:"success"`
 	Message    string `json:"message"`
 	Data       any    `json:"data,omitempty"`
 	Pagination any    `json:"pagination,omitempty"`
 	Error      string `json:"error,omitempty"`
 }
+
+// SwaggerErrorResponse represents an error response for Swagger docs
+type SwaggerErrorResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Error   string `json:"error,omitempty"`
+}
+
+// Legacy aliases for backward compatibility
+type Response = APIResponse
+type ListResponse = ListAPIResponse
 
 func SuccessResponse(c echo.Context, message string, data any) error {
 	return c.JSON(http.StatusOK, Response{

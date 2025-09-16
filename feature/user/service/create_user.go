@@ -24,7 +24,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (Cr
 		return CreateUserResponse{}, fmt.Errorf("failed to check existing user: %w", err)
 	}
 
-	if existingUser != nil {
+	if existingUser.ID != 0 {
 		slog.Warn("User already exists",
 			slog.String("email", req.Email),
 		)
@@ -39,7 +39,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (Cr
 		return CreateUserResponse{}, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	user := &repository.User{
+	user := repository.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: string(hashedPassword),

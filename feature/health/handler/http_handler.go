@@ -9,18 +9,27 @@ import (
 )
 
 type HealthHandler struct {
-	db *database.DB
+	db      *database.DB
+	version string
+	commit  string
+	buildTime string
 }
 
-func NewHealthHandler(db *database.DB) *HealthHandler {
+func NewHealthHandler(db *database.DB, version, commit, buildTime string) *HealthHandler {
 	return &HealthHandler{
-		db: db,
+		db:        db,
+		version:   version,
+		commit:    commit,
+		buildTime: buildTime,
 	}
 }
 
 func (h *HealthHandler) HealthCheck(c echo.Context) error {
 	status := "ok"
 	message := "Service is healthy"
+	httpStatus := http.StatusOK
+	
+	dbCheck := map[string]any{"status": "healthy"}
 	
 	// Check database connection
 	if err := h.db.Ping(); err != nil {
@@ -29,28 +38,25 @@ func (h *HealthHandler) HealthCheck(c echo.Context) error {
 		)
 		status = "unhealthy"
 		message = "Database connection failed"
-		
-		return c.JSON(http.StatusServiceUnavailable, map[string]any{
-			"status":  status,
-			"message": message,
-			"checks": map[string]any{
-				"database": map[string]any{
-					"status": "unhealthy",
-					"error":  err.Error(),
-				},
-			},
-		})
+		httpStatus = http.StatusServiceUnavailable
+		dbCheck = map[string]any{
+			"status": "unhealthy",
+			"error":  err.Error(),
+		}
 	}
 	
-	return c.JSON(http.StatusOK, map[string]any{
-		"status":  status,
-		"message": message,
+	response := map[string]any{
+		"status":    status,
+		"message":   message,
+		"version":   h.version,
+		"commit":    h.commit,
+		"buildTime": h.buildTime,
 		"checks": map[string]any{
-			"database": map[string]any{
-				"status": "healthy",
-			},
+			"database": dbCheck,
 		},
-	})
+	}
+	
+	return c.JSON(httpStatus, response)
 }
 
 // SetupRoutes configures health check routes
