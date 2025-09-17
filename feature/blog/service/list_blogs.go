@@ -2,11 +2,9 @@ package service
 
 import (
 	"context"
-
-	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 )
 
-func (s *blogService) ListBlogs(ctx context.Context, req http_server.PaginationRequest) ([]GetBlogResponse, int, error) {
+func (s *blogService) ListBlogs(ctx context.Context, req ListBlogsRequest) ([]GetBlogResponse, int, error) {
 	offset := (req.Page - 1) * req.PageSize
 
 	blogs, err := s.blogRepo.List(ctx, req.PageSize, offset)

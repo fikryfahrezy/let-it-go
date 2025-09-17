@@ -1,4 +1,4 @@
-.PHONY: build build-production run test test-unit test-clean-cache clean fmt health migrate-up migrate-down migrate-force migrate-version migrate-create swagger
+.PHONY: build build-production run test test-unit test-clean-cache clean fmt health migrate-up migrate-down migrate-force migrate-version migrate-create swagger generate cron
 
 # Build the application for development
 build:
@@ -76,6 +76,13 @@ migrate-create:
 swagger:
 	go tool swag init -g cmd/http_server/main.go -o docs
 
+# Generate code 
+generate:
+	go generate ./...
+
+# Run scheduled tasks
+cron:
+	go run cmd/cron/main.go
 
 # Help
 help:
@@ -99,3 +106,5 @@ help:
 	@echo "  migrate-version - Show current migration version"
 	@echo "  migrate-create - Create new migration (use NAME=migration_name)"
 	@echo "  swagger       - Generate Swagger documentation"
+	@echo "  generate      - Run code generation"
+	@echo "  cron          - Run scheduled tasks"

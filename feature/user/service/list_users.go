@@ -3,11 +3,9 @@ package service
 import (
 	"context"
 	"log/slog"
-
-	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 )
 
-func (s *userService) ListUsers(ctx context.Context, req http_server.PaginationRequest) ([]ListUsersResponse, int, error) {
+func (s *userService) ListUsers(ctx context.Context, req ListUsersRequest) ([]ListUsersResponse, int, error) {
 	s.log.Info("Listing users",
 		slog.Int("page", req.Page),
 		slog.Int("page_size", req.PageSize),

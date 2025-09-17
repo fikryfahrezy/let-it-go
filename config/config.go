@@ -15,6 +15,7 @@ type Config struct {
 	Server   ServerConfig
 	Database database.Config
 	Logger   logger.Config
+	Crontab  map[string]string
 }
 
 type ServerConfig struct {
@@ -36,6 +37,9 @@ func Load() Config {
 		Logger: logger.Config{
 			Level:  logger.ParseLevel(getEnv("LOG_LEVEL", "info")),
 			Format: logger.ParseFormat(getEnv("LOG_FORMAT", "text")),
+		},
+		Crontab: map[string]string{
+			"sample_task": getEnv("CRON_SAMPLE_TASK", "0 * * * *"),
 		},
 	}
 }

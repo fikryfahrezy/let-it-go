@@ -41,9 +41,11 @@ func TestUserService_ListUsers_Success(t *testing.T) {
 	mockRepo.ListReturns(expectedUsers, nil)
 	mockRepo.CountReturns(2, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     1,
-		PageSize: 10,
+	paginationReq := service.ListUsersRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     1,
+			PageSize: 10,
+		},
 	}
 
 	result, totalCount, err := userService.ListUsers(ctx, paginationReq)
@@ -85,9 +87,11 @@ func TestUserService_ListUsers_WithCustomPagination(t *testing.T) {
 	mockRepo.ListReturns(expectedUsers, nil)
 	mockRepo.CountReturns(25, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     3,
-		PageSize: 5,
+	paginationReq := service.ListUsersRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     3,
+			PageSize: 5,
+		},
 	}
 
 	result, totalCount, err := userService.ListUsers(ctx, paginationReq)
@@ -111,9 +115,11 @@ func TestUserService_ListUsers_EmptyResult(t *testing.T) {
 	mockRepo.ListReturns([]repository.User{}, nil)
 	mockRepo.CountReturns(0, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     1,
-		PageSize: 10,
+	paginationReq := service.ListUsersRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     1,
+			PageSize: 10,
+		},
 	}
 
 	result, totalCount, err := userService.ListUsers(ctx, paginationReq)

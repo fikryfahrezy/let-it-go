@@ -222,7 +222,9 @@ func (h *BlogHandler) ListBlogs(c echo.Context) error {
 		Page:     page,
 		PageSize: pageSize,
 	}
-	blogs, totalCount, err := h.blogService.ListBlogs(c.Request().Context(), paginationReq)
+	blogs, totalCount, err := h.blogService.ListBlogs(c.Request().Context(), service.ListBlogsRequest{
+		PaginationRequest: paginationReq,
+	})
 	if err != nil {
 		return h.translateServiceError(c, err, "Failed to list blogs")
 	}
@@ -277,7 +279,9 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 		Page:     page,
 		PageSize: pageSize,
 	}
-	blogs, totalCount, err := h.blogService.GetBlogsByAuthor(c.Request().Context(), authorID, paginationReq)
+	blogs, totalCount, err := h.blogService.GetBlogsByAuthor(c.Request().Context(), authorID, service.GetBlogsByAuthorRequest{
+		PaginationRequest: paginationReq,
+	})
 	if err != nil {
 		return h.translateServiceError(c, err, "Failed to get blogs by author")
 	}
@@ -328,7 +332,9 @@ func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 		Page:     page,
 		PageSize: pageSize,
 	}
-	blogs, totalCount, err := h.blogService.GetBlogsByStatus(c.Request().Context(), status, paginationReq)
+	blogs, totalCount, err := h.blogService.GetBlogsByStatus(c.Request().Context(), status, service.GetBlogsByStatusRequest{
+		PaginationRequest: paginationReq,
+	})
 	if err != nil {
 		return h.translateServiceError(c, err, "Failed to get blogs by status")
 	}

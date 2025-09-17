@@ -214,7 +214,9 @@ func (h *UserHandler) ListUsers(c echo.Context) error {
 		Page:     page,
 		PageSize: pageSize,
 	}
-	users, totalCount, err := h.userService.ListUsers(c.Request().Context(), paginationReq)
+	users, totalCount, err := h.userService.ListUsers(c.Request().Context(), service.ListUsersRequest{
+		PaginationRequest: paginationReq,
+	})
 	if err != nil {
 		return h.translateServiceError(c, err, "Failed to list users")
 	}

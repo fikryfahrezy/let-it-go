@@ -44,9 +44,11 @@ func TestBlogService_GetBlogsByStatus_Success(t *testing.T) {
 	mockRepo.GetByStatusReturns(expectedBlogs, nil)
 	mockRepo.CountByStatusReturns(2, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     1,
-		PageSize: 10,
+	paginationReq := service.GetBlogsByStatusRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     1,
+			PageSize: 10,
+		},
 	}
 
 	result, totalCount, err := blogService.GetBlogsByStatus(ctx, status, paginationReq)

@@ -21,8 +21,8 @@ import (
 	blogService "github.com/fikryfahrezy/let-it-go/feature/blog/service"
 	healthHandler "github.com/fikryfahrezy/let-it-go/feature/health/handler"
 	userHandler "github.com/fikryfahrezy/let-it-go/feature/user/handler"
-	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
-	"github.com/fikryfahrezy/let-it-go/feature/user/service"
+	userRepository "github.com/fikryfahrezy/let-it-go/feature/user/repository"
+	userService "github.com/fikryfahrezy/let-it-go/feature/user/service"
 	"github.com/fikryfahrezy/let-it-go/pkg/database"
 	server "github.com/fikryfahrezy/let-it-go/pkg/http_server"
 	"github.com/fikryfahrezy/let-it-go/pkg/logger"
@@ -62,14 +62,14 @@ func main() {
 	}
 
 	// Initialize feature dependencies
-	userRepo := repository.NewUserRepository(log, db)
-	userService := service.NewUserService(log, userRepo)
+	userRepo := userRepository.NewUserRepository(log, db)
+	userService := userService.NewUserService(log, userRepo)
 	userHandlerInstance := userHandler.NewUserHandler(log, userService)
 
 	// Initialize blog dependencies
 	blogRepo := blogRepository.NewBlogRepository(log, db)
-	blogServiceInstance := blogService.NewBlogService(log, blogRepo)
-	blogHandlerInstance := blogHandler.NewBlogHandler(log, blogServiceInstance)
+	blogService := blogService.NewBlogService(log, blogRepo)
+	blogHandlerInstance := blogHandler.NewBlogHandler(log, blogService)
 
 	// Initialize health handler
 	healthHandlerInstance := healthHandler.NewHealthHandler(db, version, commit, buildTime)
@@ -83,7 +83,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := srv.Initialize([]server.RouteHandler{healthHandlerInstance, userHandlerInstance, blogHandlerInstance}); err != nil {
+	routeHandlers := []server.RouteHandler{
+		healthHandlerInstance,
+		userHandlerInstance,
+		blogHandlerInstance,
+	}
+	if err := srv.Initialize(routeHandlers); err != nil {
 		log.Error("Failed to initialize server",
 			slog.String("error", err.Error()),
 		)

@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/fikryfahrezy/let-it-go/feature/user/service"
-	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 	"github.com/google/uuid"
 )
 
@@ -51,11 +50,11 @@ type FakeUserService struct {
 		result1 service.GetUserResponse
 		result2 error
 	}
-	ListUsersStub        func(context.Context, http_server.PaginationRequest) ([]service.ListUsersResponse, int, error)
+	ListUsersStub        func(context.Context, service.ListUsersRequest) ([]service.ListUsersResponse, int, error)
 	listUsersMutex       sync.RWMutex
 	listUsersArgsForCall []struct {
 		arg1 context.Context
-		arg2 http_server.PaginationRequest
+		arg2 service.ListUsersRequest
 	}
 	listUsersReturns struct {
 		result1 []service.ListUsersResponse
@@ -278,12 +277,12 @@ func (fake *FakeUserService) GetUserByIDReturnsOnCall(i int, result1 service.Get
 	}{result1, result2}
 }
 
-func (fake *FakeUserService) ListUsers(arg1 context.Context, arg2 http_server.PaginationRequest) ([]service.ListUsersResponse, int, error) {
+func (fake *FakeUserService) ListUsers(arg1 context.Context, arg2 service.ListUsersRequest) ([]service.ListUsersResponse, int, error) {
 	fake.listUsersMutex.Lock()
 	ret, specificReturn := fake.listUsersReturnsOnCall[len(fake.listUsersArgsForCall)]
 	fake.listUsersArgsForCall = append(fake.listUsersArgsForCall, struct {
 		arg1 context.Context
-		arg2 http_server.PaginationRequest
+		arg2 service.ListUsersRequest
 	}{arg1, arg2})
 	stub := fake.ListUsersStub
 	fakeReturns := fake.listUsersReturns
@@ -304,13 +303,13 @@ func (fake *FakeUserService) ListUsersCallCount() int {
 	return len(fake.listUsersArgsForCall)
 }
 
-func (fake *FakeUserService) ListUsersCalls(stub func(context.Context, http_server.PaginationRequest) ([]service.ListUsersResponse, int, error)) {
+func (fake *FakeUserService) ListUsersCalls(stub func(context.Context, service.ListUsersRequest) ([]service.ListUsersResponse, int, error)) {
 	fake.listUsersMutex.Lock()
 	defer fake.listUsersMutex.Unlock()
 	fake.ListUsersStub = stub
 }
 
-func (fake *FakeUserService) ListUsersArgsForCall(i int) (context.Context, http_server.PaginationRequest) {
+func (fake *FakeUserService) ListUsersArgsForCall(i int) (context.Context, service.ListUsersRequest) {
 	fake.listUsersMutex.RLock()
 	defer fake.listUsersMutex.RUnlock()
 	argsForCall := fake.listUsersArgsForCall[i]

@@ -43,9 +43,11 @@ func TestBlogService_ListBlogs_Success(t *testing.T) {
 	mockRepo.ListReturns(expectedBlogs, nil)
 	mockRepo.CountReturns(2, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     1,
-		PageSize: 10,
+	paginationReq := service.ListBlogsRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     1,
+			PageSize: 10,
+		},
 	}
 
 	result, totalCount, err := blogService.ListBlogs(ctx, paginationReq)
@@ -88,9 +90,11 @@ func TestBlogService_ListBlogs_WithCustomPagination(t *testing.T) {
 	mockRepo.ListReturns(expectedBlogs, nil)
 	mockRepo.CountReturns(25, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     3,
-		PageSize: 5,
+	paginationReq := service.ListBlogsRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     3,
+			PageSize: 5,
+		},
 	}
 
 	result, totalCount, err := blogService.ListBlogs(ctx, paginationReq)
@@ -114,9 +118,11 @@ func TestBlogService_ListBlogs_EmptyResult(t *testing.T) {
 	mockRepo.ListReturns([]repository.Blog{}, nil)
 	mockRepo.CountReturns(0, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     1,
-		PageSize: 10,
+	paginationReq := service.ListBlogsRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     1,
+			PageSize: 10,
+		},
 	}
 
 	result, totalCount, err := blogService.ListBlogs(ctx, paginationReq)

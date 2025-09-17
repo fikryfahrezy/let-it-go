@@ -44,9 +44,11 @@ func TestBlogService_GetBlogsByAuthor_Success(t *testing.T) {
 	mockRepo.GetByAuthorIDReturns(expectedBlogs, nil)
 	mockRepo.CountReturns(2, nil)
 
-	paginationReq := http_server.PaginationRequest{
-		Page:     1,
-		PageSize: 10,
+	paginationReq := service.GetBlogsByAuthorRequest{
+		PaginationRequest: http_server.PaginationRequest{
+			Page:     1,
+			PageSize: 10,
+		},
 	}
 
 	result, totalCount, err := blogService.GetBlogsByAuthor(ctx, authorID, paginationReq)

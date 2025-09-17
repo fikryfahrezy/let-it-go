@@ -4,8 +4,13 @@ import (
 	"time"
 
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
+	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 	"github.com/google/uuid"
 )
+
+type ListUsersRequest struct {
+	http_server.PaginationRequest
+}
 
 type ListUsersResponse struct {
 	ID        uuid.UUID `json:"id"`

@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/fikryfahrezy/let-it-go/feature/blog/service"
-	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 	"github.com/google/uuid"
 )
 
@@ -65,12 +64,12 @@ type FakeBlogService struct {
 		result1 service.GetBlogResponse
 		result2 error
 	}
-	GetBlogsByAuthorStub        func(context.Context, uuid.UUID, http_server.PaginationRequest) ([]service.GetBlogResponse, int, error)
+	GetBlogsByAuthorStub        func(context.Context, uuid.UUID, service.GetBlogsByAuthorRequest) ([]service.GetBlogResponse, int, error)
 	getBlogsByAuthorMutex       sync.RWMutex
 	getBlogsByAuthorArgsForCall []struct {
 		arg1 context.Context
 		arg2 uuid.UUID
-		arg3 http_server.PaginationRequest
+		arg3 service.GetBlogsByAuthorRequest
 	}
 	getBlogsByAuthorReturns struct {
 		result1 []service.GetBlogResponse
@@ -82,12 +81,12 @@ type FakeBlogService struct {
 		result2 int
 		result3 error
 	}
-	GetBlogsByStatusStub        func(context.Context, string, http_server.PaginationRequest) ([]service.GetBlogResponse, int, error)
+	GetBlogsByStatusStub        func(context.Context, string, service.GetBlogsByStatusRequest) ([]service.GetBlogResponse, int, error)
 	getBlogsByStatusMutex       sync.RWMutex
 	getBlogsByStatusArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 http_server.PaginationRequest
+		arg3 service.GetBlogsByStatusRequest
 	}
 	getBlogsByStatusReturns struct {
 		result1 []service.GetBlogResponse
@@ -99,11 +98,11 @@ type FakeBlogService struct {
 		result2 int
 		result3 error
 	}
-	ListBlogsStub        func(context.Context, http_server.PaginationRequest) ([]service.GetBlogResponse, int, error)
+	ListBlogsStub        func(context.Context, service.ListBlogsRequest) ([]service.GetBlogResponse, int, error)
 	listBlogsMutex       sync.RWMutex
 	listBlogsArgsForCall []struct {
 		arg1 context.Context
-		arg2 http_server.PaginationRequest
+		arg2 service.ListBlogsRequest
 	}
 	listBlogsReturns struct {
 		result1 []service.GetBlogResponse
@@ -405,13 +404,13 @@ func (fake *FakeBlogService) GetBlogByIDReturnsOnCall(i int, result1 service.Get
 	}{result1, result2}
 }
 
-func (fake *FakeBlogService) GetBlogsByAuthor(arg1 context.Context, arg2 uuid.UUID, arg3 http_server.PaginationRequest) ([]service.GetBlogResponse, int, error) {
+func (fake *FakeBlogService) GetBlogsByAuthor(arg1 context.Context, arg2 uuid.UUID, arg3 service.GetBlogsByAuthorRequest) ([]service.GetBlogResponse, int, error) {
 	fake.getBlogsByAuthorMutex.Lock()
 	ret, specificReturn := fake.getBlogsByAuthorReturnsOnCall[len(fake.getBlogsByAuthorArgsForCall)]
 	fake.getBlogsByAuthorArgsForCall = append(fake.getBlogsByAuthorArgsForCall, struct {
 		arg1 context.Context
 		arg2 uuid.UUID
-		arg3 http_server.PaginationRequest
+		arg3 service.GetBlogsByAuthorRequest
 	}{arg1, arg2, arg3})
 	stub := fake.GetBlogsByAuthorStub
 	fakeReturns := fake.getBlogsByAuthorReturns
@@ -432,13 +431,13 @@ func (fake *FakeBlogService) GetBlogsByAuthorCallCount() int {
 	return len(fake.getBlogsByAuthorArgsForCall)
 }
 
-func (fake *FakeBlogService) GetBlogsByAuthorCalls(stub func(context.Context, uuid.UUID, http_server.PaginationRequest) ([]service.GetBlogResponse, int, error)) {
+func (fake *FakeBlogService) GetBlogsByAuthorCalls(stub func(context.Context, uuid.UUID, service.GetBlogsByAuthorRequest) ([]service.GetBlogResponse, int, error)) {
 	fake.getBlogsByAuthorMutex.Lock()
 	defer fake.getBlogsByAuthorMutex.Unlock()
 	fake.GetBlogsByAuthorStub = stub
 }
 
-func (fake *FakeBlogService) GetBlogsByAuthorArgsForCall(i int) (context.Context, uuid.UUID, http_server.PaginationRequest) {
+func (fake *FakeBlogService) GetBlogsByAuthorArgsForCall(i int) (context.Context, uuid.UUID, service.GetBlogsByAuthorRequest) {
 	fake.getBlogsByAuthorMutex.RLock()
 	defer fake.getBlogsByAuthorMutex.RUnlock()
 	argsForCall := fake.getBlogsByAuthorArgsForCall[i]
@@ -474,13 +473,13 @@ func (fake *FakeBlogService) GetBlogsByAuthorReturnsOnCall(i int, result1 []serv
 	}{result1, result2, result3}
 }
 
-func (fake *FakeBlogService) GetBlogsByStatus(arg1 context.Context, arg2 string, arg3 http_server.PaginationRequest) ([]service.GetBlogResponse, int, error) {
+func (fake *FakeBlogService) GetBlogsByStatus(arg1 context.Context, arg2 string, arg3 service.GetBlogsByStatusRequest) ([]service.GetBlogResponse, int, error) {
 	fake.getBlogsByStatusMutex.Lock()
 	ret, specificReturn := fake.getBlogsByStatusReturnsOnCall[len(fake.getBlogsByStatusArgsForCall)]
 	fake.getBlogsByStatusArgsForCall = append(fake.getBlogsByStatusArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 http_server.PaginationRequest
+		arg3 service.GetBlogsByStatusRequest
 	}{arg1, arg2, arg3})
 	stub := fake.GetBlogsByStatusStub
 	fakeReturns := fake.getBlogsByStatusReturns
@@ -501,13 +500,13 @@ func (fake *FakeBlogService) GetBlogsByStatusCallCount() int {
 	return len(fake.getBlogsByStatusArgsForCall)
 }
 
-func (fake *FakeBlogService) GetBlogsByStatusCalls(stub func(context.Context, string, http_server.PaginationRequest) ([]service.GetBlogResponse, int, error)) {
+func (fake *FakeBlogService) GetBlogsByStatusCalls(stub func(context.Context, string, service.GetBlogsByStatusRequest) ([]service.GetBlogResponse, int, error)) {
 	fake.getBlogsByStatusMutex.Lock()
 	defer fake.getBlogsByStatusMutex.Unlock()
 	fake.GetBlogsByStatusStub = stub
 }
 
-func (fake *FakeBlogService) GetBlogsByStatusArgsForCall(i int) (context.Context, string, http_server.PaginationRequest) {
+func (fake *FakeBlogService) GetBlogsByStatusArgsForCall(i int) (context.Context, string, service.GetBlogsByStatusRequest) {
 	fake.getBlogsByStatusMutex.RLock()
 	defer fake.getBlogsByStatusMutex.RUnlock()
 	argsForCall := fake.getBlogsByStatusArgsForCall[i]
@@ -543,12 +542,12 @@ func (fake *FakeBlogService) GetBlogsByStatusReturnsOnCall(i int, result1 []serv
 	}{result1, result2, result3}
 }
 
-func (fake *FakeBlogService) ListBlogs(arg1 context.Context, arg2 http_server.PaginationRequest) ([]service.GetBlogResponse, int, error) {
+func (fake *FakeBlogService) ListBlogs(arg1 context.Context, arg2 service.ListBlogsRequest) ([]service.GetBlogResponse, int, error) {
 	fake.listBlogsMutex.Lock()
 	ret, specificReturn := fake.listBlogsReturnsOnCall[len(fake.listBlogsArgsForCall)]
 	fake.listBlogsArgsForCall = append(fake.listBlogsArgsForCall, struct {
 		arg1 context.Context
-		arg2 http_server.PaginationRequest
+		arg2 service.ListBlogsRequest
 	}{arg1, arg2})
 	stub := fake.ListBlogsStub
 	fakeReturns := fake.listBlogsReturns
@@ -569,13 +568,13 @@ func (fake *FakeBlogService) ListBlogsCallCount() int {
 	return len(fake.listBlogsArgsForCall)
 }
 
-func (fake *FakeBlogService) ListBlogsCalls(stub func(context.Context, http_server.PaginationRequest) ([]service.GetBlogResponse, int, error)) {
+func (fake *FakeBlogService) ListBlogsCalls(stub func(context.Context, service.ListBlogsRequest) ([]service.GetBlogResponse, int, error)) {
 	fake.listBlogsMutex.Lock()
 	defer fake.listBlogsMutex.Unlock()
 	fake.ListBlogsStub = stub
 }
 
-func (fake *FakeBlogService) ListBlogsArgsForCall(i int) (context.Context, http_server.PaginationRequest) {
+func (fake *FakeBlogService) ListBlogsArgsForCall(i int) (context.Context, service.ListBlogsRequest) {
 	fake.listBlogsMutex.RLock()
 	defer fake.listBlogsMutex.RUnlock()
 	argsForCall := fake.listBlogsArgsForCall[i]
