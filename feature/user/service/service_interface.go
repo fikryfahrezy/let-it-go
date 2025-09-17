@@ -1,6 +1,6 @@
 package service
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o servicefakes/fake_user_service.go . UserService
+//counterfeiter:generate -o servicefakes/fake_user_service.go . UserService
 
 import (
 	"context"

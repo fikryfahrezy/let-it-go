@@ -1,6 +1,6 @@
 package repository
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o repositoryfakes/fake_user_repository.go . UserRepository
+//counterfeiter:generate -o repositoryfakes/fake_user_repository.go . UserRepository
 
 import (
 	"context"

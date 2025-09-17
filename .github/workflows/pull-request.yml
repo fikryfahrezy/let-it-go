@@ -22,6 +22,10 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
+      - name: Download dependencies
+        run: go mod download
+      - name: Generate API documentation
+        run: make swagger
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
@@ -39,5 +43,11 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
+      - name: Download dependencies
+        run: go mod download
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+      - name: Generate API documentation
+        run: swag init -g cmd/http_server/main.go
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out ./...

@@ -74,7 +74,7 @@ migrate-create:
 
 # Swagger documentation generation
 swagger:
-	swag init -g cmd/http_server/main.go -o docs
+	go tool swag init -g cmd/http_server/main.go -o docs
 
 
 # Help
