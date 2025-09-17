@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 	"github.com/google/uuid"
@@ -12,20 +10,14 @@ import (
 func (s *blogService) ArchiveBlog(ctx context.Context, id uuid.UUID) (GetBlogResponse, error) {
 	blog, err := s.blogRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return GetBlogResponse{}, repository.ErrBlogNotFound
-		}
-		return GetBlogResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToGetBlog, err)
+		return GetBlogResponse{}, err
 	}
 
 	blog.Status = repository.StatusArchived
 	blog.PublishedAt = nil
 
 	if err := s.blogRepo.Update(ctx, blog); err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return GetBlogResponse{}, repository.ErrBlogNotFound
-		}
-		return GetBlogResponse{}, fmt.Errorf("%w: %w", ErrFailedToArchiveBlog, err)
+		return GetBlogResponse{}, err
 	}
 
 	return BlogEntityToGetResponse(blog), nil

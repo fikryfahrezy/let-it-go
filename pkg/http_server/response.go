@@ -1,4 +1,4 @@
-package server
+package http_server
 
 import (
 	"net/http"
@@ -9,63 +9,78 @@ import (
 
 // APIResponse represents a standard API response
 type APIResponse struct {
-	Success   bool   `json:"success"`
-	Message   string `json:"message"`
-	Data      any    `json:"data,omitempty"`
-	Error     string `json:"error,omitempty"`
-	ErrorCode string `json:"error_code,omitempty"`
+	Message     string         `json:"message"`
+	Error       string         `json:"error"`
+	ErrorFields map[string]any `json:"error_fields,omitempty"`
+	Result      any            `json:"result,omitempty"`
 }
 
 // ListAPIResponse represents a paginated API response
 type ListAPIResponse struct {
-	Success    bool   `json:"success"`
-	Message    string `json:"message"`
-	Data       any    `json:"data,omitempty"`
-	Pagination any    `json:"pagination,omitempty"`
-	Error      string `json:"error,omitempty"`
-	ErrorCode  string `json:"error_code,omitempty"`
+	Message     string              `json:"message"`
+	Error       string              `json:"error"`
+	ErrorFields map[string]any      `json:"error_fields,omitempty"`
+	Result      any                 `json:"result,omitempty"`
+	Pagination  *PaginationResponse `json:"pagination,omitempty"`
+}
+
+// PaginationResponse represents pagination metadata
+type PaginationResponse struct {
+	TotalData  int `json:"total_data"`
+	TotalPages int `json:"total_pages"`
+	Page       int `json:"page"`
+	Limit      int `json:"limit"`
+}
+
+// PaginationRequest represents pagination input parameters
+type PaginationRequest struct {
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
 }
 
 func SuccessResponse(c echo.Context, message string, data any) error {
 	return c.JSON(http.StatusOK, APIResponse{
-		Success: true,
 		Message: message,
-		Data:    data,
+		Error:   "",
+		Result:  data,
 	})
 }
 
 func CreatedResponse(c echo.Context, message string, data any) error {
 	return c.JSON(http.StatusCreated, APIResponse{
-		Success: true,
 		Message: message,
-		Data:    data,
+		Error:   "",
+		Result:  data,
 	})
 }
 
-func ListSuccessResponse(c echo.Context, message string, data any, pagination any) error {
+func ListSuccessResponse(c echo.Context, message string, data any, pagination PaginationResponse) error {
 	return c.JSON(http.StatusOK, ListAPIResponse{
-		Success:    true,
 		Message:    message,
-		Data:       data,
-		Pagination: pagination,
+		Error:      "",
+		Result:     data,
+		Pagination: &pagination,
 	})
 }
 
 func ErrorResponse(c echo.Context, statusCode int, message string, err error) error {
-	errorMsg := ""
-	errorCode := ""
-	
+	var errorCode string
+	var errorFields map[string]any
+
 	if err != nil {
-		errorMsg = err.Error()
 		// Extract error code if it's an AppError
-		errorCode = app_error.GetCode(err)
+		code := app_error.GetCode(err)
+		if code != "" {
+			errorCode = code
+		}
+		// You can add error fields parsing here if needed
+		errorFields = map[string]any{}
 	}
 
 	return c.JSON(statusCode, APIResponse{
-		Success:   false,
-		Message:   message,
-		Error:     errorMsg,
-		ErrorCode: errorCode,
+		Message:     message,
+		Error:       errorCode,
+		ErrorFields: errorFields,
 	})
 }
 
@@ -79,4 +94,23 @@ func NotFoundResponse(c echo.Context, message string, err error) error {
 
 func InternalServerErrorResponse(c echo.Context, message string, err error) error {
 	return ErrorResponse(c, http.StatusInternalServerError, message, err)
+}
+
+// ValidationErrorResponse creates a response for validation errors with field-specific errors
+func ValidationErrorResponse(c echo.Context, message string, errorFields map[string]any) error {
+	return c.JSON(http.StatusBadRequest, APIResponse{
+		Message:     message,
+		Error:       "VALIDATION_ERROR",
+		ErrorFields: errorFields,
+	})
+}
+
+// CreatePaginationResponse creates a pagination response object
+func CreatePaginationResponse(totalData, totalPages, page, limit int) PaginationResponse {
+	return PaginationResponse{
+		TotalData:  totalData,
+		TotalPages: totalPages,
+		Page:       page,
+		Limit:      limit,
+	}
 }

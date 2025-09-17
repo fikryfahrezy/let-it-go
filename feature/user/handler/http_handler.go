@@ -3,9 +3,9 @@ package handler
 import (
 	"errors"
 	"log/slog"
+	"math"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
 	"github.com/fikryfahrezy/let-it-go/feature/user/service"
@@ -22,6 +22,26 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	return &UserHandler{
 		userService: userService,
 	}
+}
+
+// translateServiceError converts service errors to appropriate HTTP responses
+func (h *UserHandler) translateServiceError(c echo.Context, err error, defaultMessage string) error {
+	if errors.Is(err, service.ErrUserAlreadyExists) {
+		return http_server.BadRequestResponse(c, "Email address is already taken", err)
+	}
+	if errors.Is(err, service.ErrFailedToHashPassword) {
+		return http_server.InternalServerErrorResponse(c, "Password processing failed", err)
+	}
+	if errors.Is(err, repository.ErrUserNotFound) {
+		return http_server.NotFoundResponse(c, "User not found", err)
+	}
+	
+	// Log unexpected errors
+	slog.Error("Service error",
+		slog.String("error", err.Error()),
+		slog.String("operation", defaultMessage),
+	)
+	return http_server.InternalServerErrorResponse(c, defaultMessage, err)
 }
 
 // CreateUser creates a new user
@@ -41,31 +61,19 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		slog.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
-		return server.BadRequestResponse(c, "Invalid request format", err)
+		return http_server.BadRequestResponse(c, "Invalid request format", err)
 	}
 
-	if err := h.validateCreateUserRequest(req); err != nil {
-		slog.Warn("Invalid create user request",
-			slog.String("error", err.Error()),
-		)
-		return server.BadRequestResponse(c, "Validation failed", err)
+	if err := c.Validate(&req); err != nil {
+		return http_server.HandleValidationError(c, err)
 	}
 
 	user, err := h.userService.CreateUser(c.Request().Context(), req)
 	if err != nil {
-		if errors.Is(err, service.ErrUserAlreadyExists) {
-			return server.BadRequestResponse(c, "Email address is already taken", err)
-		}
-		if errors.Is(err, service.ErrFailedToHashPassword) {
-			return server.InternalServerErrorResponse(c, "Password processing failed", err)
-		}
-		slog.Error("Failed to create user",
-			slog.String("error", err.Error()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to create user", err)
+		return h.translateServiceError(c, err, "Failed to create user")
 	}
 
-	return server.CreatedResponse(c, "User created successfully", user)
+	return http_server.CreatedResponse(c, "User created successfully", user)
 }
 
 // GetUser retrieves a user by ID
@@ -87,22 +95,15 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 		slog.Warn("Invalid user ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid user UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid user UUID format", err)
 	}
 
 	user, err := h.userService.GetUserByID(c.Request().Context(), id)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
-			return server.NotFoundResponse(c, "User not found", err)
-		}
-		slog.Error("Failed to get user",
-			slog.String("error", err.Error()),
-			slog.String("user_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to get user", err)
+		return h.translateServiceError(c, err, "Failed to get user")
 	}
 
-	return server.SuccessResponse(c, "User retrieved successfully", user)
+	return http_server.SuccessResponse(c, "User retrieved successfully", user)
 }
 
 // UpdateUser updates an existing user
@@ -125,7 +126,7 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 		slog.Warn("Invalid user ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid user UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid user UUID format", err)
 	}
 
 	var req service.UpdateUserRequest
@@ -133,32 +134,19 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 		slog.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
-		return server.BadRequestResponse(c, "Invalid request format", err)
+		return http_server.BadRequestResponse(c, "Invalid request format", err)
 	}
 
-	if err := h.validateUpdateUserRequest(req); err != nil {
-		slog.Warn("Invalid update user request",
-			slog.String("error", err.Error()),
-		)
-		return server.BadRequestResponse(c, "Validation failed", err)
+	if err := c.Validate(&req); err != nil {
+		return http_server.HandleValidationError(c, err)
 	}
 
 	user, err := h.userService.UpdateUser(c.Request().Context(), id, req)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
-			return server.NotFoundResponse(c, "User not found", err)
-		}
-		if errors.Is(err, service.ErrUserAlreadyExists) {
-			return server.BadRequestResponse(c, "Email address is already taken", err)
-		}
-		slog.Error("Failed to update user",
-			slog.String("error", err.Error()),
-			slog.String("user_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to update user", err)
+		return h.translateServiceError(c, err, "Failed to update user")
 	}
 
-	return server.SuccessResponse(c, "User updated successfully", user)
+	return http_server.SuccessResponse(c, "User updated successfully", user)
 }
 
 // DeleteUser deletes a user by ID
@@ -180,22 +168,15 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 		slog.Warn("Invalid user ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid user UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid user UUID format", err)
 	}
 
 	err = h.userService.DeleteUser(c.Request().Context(), id)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
-			return server.NotFoundResponse(c, "User not found", err)
-		}
-		slog.Error("Failed to delete user",
-			slog.String("error", err.Error()),
-			slog.String("user_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to delete user", err)
+		return h.translateServiceError(c, err, "Failed to delete user")
 	}
 
-	return server.SuccessResponse(c, "User deleted successfully", nil)
+	return http_server.SuccessResponse(c, "User deleted successfully", nil)
 }
 
 // ListUsers retrieves a list of users with pagination
@@ -227,15 +208,19 @@ func (h *UserHandler) ListUsers(c echo.Context) error {
 		}
 	}
 
-	users, pagination, err := h.userService.ListUsers(c.Request().Context(), page, pageSize)
+	paginationReq := http_server.PaginationRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
+	users, totalCount, err := h.userService.ListUsers(c.Request().Context(), paginationReq)
 	if err != nil {
-		slog.Error("Failed to list users",
-			slog.String("error", err.Error()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to list users", err)
+		return h.translateServiceError(c, err, "Failed to list users")
 	}
 
-	return server.ListSuccessResponse(c, "Users retrieved successfully", users, pagination)
+	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
+
+	return http_server.ListSuccessResponse(c, "Users retrieved successfully", users, pagination)
 }
 
 func (h *UserHandler) HealthCheck(c echo.Context) error {
@@ -245,37 +230,6 @@ func (h *UserHandler) HealthCheck(c echo.Context) error {
 	})
 }
 
-func (h *UserHandler) validateCreateUserRequest(req service.CreateUserRequest) error {
-	if req.Name == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "name is required")
-	}
-	if len(req.Name) < 2 || len(req.Name) > 100 {
-		return echo.NewHTTPError(http.StatusBadRequest, "name must be between 2 and 100 characters")
-	}
-	if req.Email == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "email is required")
-	}
-	if !strings.Contains(req.Email, "@") {
-		return echo.NewHTTPError(http.StatusBadRequest, "email must be valid")
-	}
-	if req.Password == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "password is required")
-	}
-	if len(req.Password) < 6 {
-		return echo.NewHTTPError(http.StatusBadRequest, "password must be at least 6 characters")
-	}
-	return nil
-}
-
-func (h *UserHandler) validateUpdateUserRequest(req service.UpdateUserRequest) error {
-	if req.Name != "" && (len(req.Name) < 2 || len(req.Name) > 100) {
-		return echo.NewHTTPError(http.StatusBadRequest, "name must be between 2 and 100 characters")
-	}
-	if req.Email != "" && !strings.Contains(req.Email, "@") {
-		return echo.NewHTTPError(http.StatusBadRequest, "email must be valid")
-	}
-	return nil
-}
 
 // SetupRoutes configures all versioned API routes for users
 func (h *UserHandler) SetupRoutes(api *echo.Group) {

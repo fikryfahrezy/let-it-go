@@ -1,4 +1,4 @@
-package server
+package http_server
 
 import (
 	"context"
@@ -40,6 +40,9 @@ func (s *Server) Initialize(handlers []RouteHandler) error {
 
 	// Initialize Echo server
 	e := echo.New()
+	
+	// Set custom validator
+	e.Validator = NewCustomValidator()
 	
 	// Configure middleware
 	e.Use(middleware.Logger())

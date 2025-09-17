@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
@@ -23,11 +22,7 @@ func (s *userService) UpdateUser(ctx context.Context, id uuid.UUID, req UpdateUs
 			)
 			return UpdateUserResponse{}, repository.ErrUserNotFound
 		}
-		slog.Error("Failed to get user by ID",
-			slog.String("error", err.Error()),
-			slog.String("user_id", id.String()),
-		)
-		return UpdateUserResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToGetUser, err)
+		return UpdateUserResponse{}, err
 	}
 
 	if req.Email != "" && req.Email != user.Email {
@@ -35,11 +30,7 @@ func (s *userService) UpdateUser(ctx context.Context, id uuid.UUID, req UpdateUs
 		if err != nil {
 			// If it's not a "not found" error, it's a real database issue
 			if !errors.Is(err, repository.ErrUserNotFound) {
-				slog.Error("Failed to check existing user",
-					slog.String("error", err.Error()),
-					slog.String("email", req.Email),
-				)
-				return UpdateUserResponse{}, fmt.Errorf("%w: %w", ErrFailedToCheckExistingUser, err)
+				return UpdateUserResponse{}, err
 			}
 			// User not found is expected, continue
 		} else if existingUser.ID != uuid.Nil && existingUser.ID != id {
@@ -58,11 +49,7 @@ func (s *userService) UpdateUser(ctx context.Context, id uuid.UUID, req UpdateUs
 	}
 
 	if err := s.userRepo.Update(ctx, user); err != nil {
-		slog.Error("Failed to update user",
-			slog.String("error", err.Error()),
-			slog.String("user_id", id.String()),
-		)
-		return UpdateUserResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToUpdateUser, err)
+		return UpdateUserResponse{}, err
 	}
 
 	response := ToUpdateUserResponse(user)

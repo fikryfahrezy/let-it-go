@@ -2,31 +2,22 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"math"
 
-	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
+	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 )
 
-func (s *blogService) ListBlogs(ctx context.Context, page, pageSize int) ([]GetBlogResponse, PaginationInfo, error) {
-	offset := (page - 1) * pageSize
+func (s *blogService) ListBlogs(ctx context.Context, req http_server.PaginationRequest) ([]GetBlogResponse, int, error) {
+	offset := (req.Page - 1) * req.PageSize
 
-	blogs, err := s.blogRepo.List(ctx, pageSize, offset)
+	blogs, err := s.blogRepo.List(ctx, req.PageSize, offset)
 	if err != nil {
-		return nil, PaginationInfo{}, fmt.Errorf("%w: %w", repository.ErrFailedToListBlogs, err)
+		return nil, 0, err
 	}
 
 	totalItems, err := s.blogRepo.Count(ctx)
 	if err != nil {
-		return nil, PaginationInfo{}, fmt.Errorf("%w: %w", repository.ErrFailedToCountBlogs, err)
+		return nil, 0, err
 	}
 
-	pagination := PaginationInfo{
-		Page:       page,
-		PageSize:   pageSize,
-		TotalItems: totalItems,
-		TotalPages: int(math.Ceil(float64(totalItems) / float64(pageSize))),
-	}
-
-	return BlogEntitiesToGetResponses(blogs), pagination, nil
+	return BlogEntitiesToGetResponses(blogs), totalItems, nil
 }

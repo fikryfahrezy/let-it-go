@@ -2,42 +2,28 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-	"math"
 
-	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
+	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 )
 
-func (s *userService) ListUsers(ctx context.Context, page, pageSize int) ([]ListUsersResponse, PaginationResponse, error) {
+func (s *userService) ListUsers(ctx context.Context, req http_server.PaginationRequest) ([]ListUsersResponse, int, error) {
 	slog.Info("Listing users",
-		slog.Int("page", page),
-		slog.Int("page_size", pageSize),
+		slog.Int("page", req.Page),
+		slog.Int("page_size", req.PageSize),
 	)
 
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 || pageSize > 100 {
-		pageSize = 10
-	}
 
-	offset := (page - 1) * pageSize
+	offset := (req.Page - 1) * req.PageSize
 
-	users, err := s.userRepo.List(ctx, pageSize, offset)
+	users, err := s.userRepo.List(ctx, req.PageSize, offset)
 	if err != nil {
-		slog.Error("Failed to list users",
-			slog.String("error", err.Error()),
-		)
-		return nil, PaginationResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToListUsers, err)
+		return nil, 0, err
 	}
 
 	total, err := s.userRepo.Count(ctx)
 	if err != nil {
-		slog.Error("Failed to count users",
-			slog.String("error", err.Error()),
-		)
-		return nil, PaginationResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToCountUsers, err)
+		return nil, 0, err
 	}
 
 	var responses []ListUsersResponse
@@ -46,19 +32,11 @@ func (s *userService) ListUsers(ctx context.Context, page, pageSize int) ([]List
 		responses = append(responses, response)
 	}
 
-	totalPage := int(math.Ceil(float64(total) / float64(pageSize)))
-
-	pagination := PaginationResponse{
-		Page:      page,
-		PageSize:  pageSize,
-		Total:     total,
-		TotalPage: totalPage,
-	}
 
 	slog.Info("Users listed successfully",
 		slog.Int("count", len(responses)),
 		slog.Int("total", total),
 	)
 
-	return responses, pagination, nil
+	return responses, total, nil
 }

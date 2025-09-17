@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
@@ -13,10 +11,7 @@ import (
 func (s *blogService) PublishBlog(ctx context.Context, id uuid.UUID) (GetBlogResponse, error) {
 	blog, err := s.blogRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return GetBlogResponse{}, repository.ErrBlogNotFound
-		}
-		return GetBlogResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToGetBlog, err)
+		return GetBlogResponse{}, err
 	}
 
 	blog.Status = repository.StatusPublished
@@ -24,10 +19,7 @@ func (s *blogService) PublishBlog(ctx context.Context, id uuid.UUID) (GetBlogRes
 	blog.PublishedAt = &now
 
 	if err := s.blogRepo.Update(ctx, blog); err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return GetBlogResponse{}, repository.ErrBlogNotFound
-		}
-		return GetBlogResponse{}, fmt.Errorf("%w: %w", ErrFailedToPublishBlog, err)
+		return GetBlogResponse{}, err
 	}
 
 	return BlogEntityToGetResponse(blog), nil

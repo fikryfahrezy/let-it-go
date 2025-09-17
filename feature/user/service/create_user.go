@@ -21,11 +21,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (Cr
 	if err != nil {
 		// If it's not a "not found" error, it's a real database issue
 		if !errors.Is(err, repository.ErrUserNotFound) {
-			slog.Error("Failed to check existing user",
-				slog.String("error", err.Error()),
-				slog.String("email", req.Email),
-			)
-			return CreateUserResponse{}, fmt.Errorf("%w: %w", ErrFailedToCheckExistingUser, err)
+			return CreateUserResponse{}, err
 		}
 		// User not found is expected for creation, continue
 	} else if existingUser.ID != uuid.Nil {
@@ -51,11 +47,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (Cr
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {
-		slog.Error("Failed to create user",
-			slog.String("error", err.Error()),
-			slog.String("email", req.Email),
-		)
-		return CreateUserResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToCreateUser, err)
+		return CreateUserResponse{}, err
 	}
 
 	response := ToCreateUserResponse(user)

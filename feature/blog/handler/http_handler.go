@@ -3,7 +3,7 @@ package handler
 import (
 	"errors"
 	"log/slog"
-	"net/http"
+	"math"
 	"strconv"
 
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
@@ -23,6 +23,35 @@ func NewBlogHandler(blogService service.BlogService) *BlogHandler {
 	}
 }
 
+// translateServiceError converts service errors to appropriate HTTP responses
+func (h *BlogHandler) translateServiceError(c echo.Context, err error, defaultMessage string) error {
+	if errors.Is(err, repository.ErrBlogNotFound) {
+		return http_server.NotFoundResponse(c, "Blog not found", err)
+	}
+	if errors.Is(err, service.ErrInvalidBlogStatus) {
+		return http_server.BadRequestResponse(c, "Invalid blog status", err)
+	}
+	if errors.Is(err, service.ErrBlogAlreadyPublished) {
+		return http_server.BadRequestResponse(c, "Blog is already published", err)
+	}
+	if errors.Is(err, service.ErrBlogAlreadyArchived) {
+		return http_server.BadRequestResponse(c, "Blog is already archived", err)
+	}
+	if errors.Is(err, service.ErrFailedToPublishBlog) {
+		return http_server.InternalServerErrorResponse(c, "Failed to publish blog", err)
+	}
+	if errors.Is(err, service.ErrFailedToArchiveBlog) {
+		return http_server.InternalServerErrorResponse(c, "Failed to archive blog", err)
+	}
+	
+	// Log unexpected errors
+	slog.Error("Service error",
+		slog.String("error", err.Error()),
+		slog.String("operation", defaultMessage),
+	)
+	return http_server.InternalServerErrorResponse(c, defaultMessage, err)
+}
+
 // CreateBlog creates a new blog
 // @Summary Create a new blog
 // @Description Create a new blog with the provided information
@@ -40,25 +69,19 @@ func (h *BlogHandler) CreateBlog(c echo.Context) error {
 		slog.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
-		return server.BadRequestResponse(c, "Invalid request format", err)
+		return http_server.BadRequestResponse(c, "Invalid request format", err)
 	}
 
-	if err := h.validateCreateBlogRequest(req); err != nil {
-		slog.Warn("Invalid create blog request",
-			slog.String("error", err.Error()),
-		)
-		return server.BadRequestResponse(c, "Validation failed", err)
+	if err := c.Validate(&req); err != nil {
+		return http_server.HandleValidationError(c, err)
 	}
 
 	blog, err := h.blogService.CreateBlog(c.Request().Context(), req)
 	if err != nil {
-		slog.Error("Failed to create blog",
-			slog.String("error", err.Error()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to create blog", err)
+		return h.translateServiceError(c, err, "Failed to create blog")
 	}
 
-	return server.CreatedResponse(c, "Blog created successfully", blog)
+	return http_server.CreatedResponse(c, "Blog created successfully", blog)
 }
 
 // GetBlog retrieves a blog by ID
@@ -80,22 +103,15 @@ func (h *BlogHandler) GetBlog(c echo.Context) error {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	blog, err := h.blogService.GetBlogByID(c.Request().Context(), id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return server.NotFoundResponse(c, "Blog not found", err)
-		}
-		slog.Error("Failed to get blog",
-			slog.String("error", err.Error()),
-			slog.String("blog_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to get blog", err)
+		return h.translateServiceError(c, err, "Failed to get blog")
 	}
 
-	return server.SuccessResponse(c, "Blog retrieved successfully", blog)
+	return http_server.SuccessResponse(c, "Blog retrieved successfully", blog)
 }
 
 // UpdateBlog updates an existing blog
@@ -118,7 +134,7 @@ func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	var req service.UpdateBlogRequest
@@ -126,29 +142,19 @@ func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 		slog.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
-		return server.BadRequestResponse(c, "Invalid request format", err)
+		return http_server.BadRequestResponse(c, "Invalid request format", err)
 	}
 
-	if err := h.validateUpdateBlogRequest(req); err != nil {
-		slog.Warn("Invalid update blog request",
-			slog.String("error", err.Error()),
-		)
-		return server.BadRequestResponse(c, "Validation failed", err)
+	if err := c.Validate(&req); err != nil {
+		return http_server.HandleValidationError(c, err)
 	}
 
 	blog, err := h.blogService.UpdateBlog(c.Request().Context(), id, req)
 	if err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return server.NotFoundResponse(c, "Blog not found", err)
-		}
-		slog.Error("Failed to update blog",
-			slog.String("error", err.Error()),
-			slog.String("blog_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to update blog", err)
+		return h.translateServiceError(c, err, "Failed to update blog")
 	}
 
-	return server.SuccessResponse(c, "Blog updated successfully", blog)
+	return http_server.SuccessResponse(c, "Blog updated successfully", blog)
 }
 
 // DeleteBlog deletes a blog by ID
@@ -170,22 +176,15 @@ func (h *BlogHandler) DeleteBlog(c echo.Context) error {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	err = h.blogService.DeleteBlog(c.Request().Context(), id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return server.NotFoundResponse(c, "Blog not found", err)
-		}
-		slog.Error("Failed to delete blog",
-			slog.String("error", err.Error()),
-			slog.String("blog_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to delete blog", err)
+		return h.translateServiceError(c, err, "Failed to delete blog")
 	}
 
-	return server.SuccessResponse(c, "Blog deleted successfully", nil)
+	return http_server.SuccessResponse(c, "Blog deleted successfully", nil)
 }
 
 // ListBlogs retrieves a list of blogs with pagination
@@ -217,15 +216,19 @@ func (h *BlogHandler) ListBlogs(c echo.Context) error {
 		}
 	}
 
-	blogs, pagination, err := h.blogService.ListBlogs(c.Request().Context(), page, pageSize)
+	paginationReq := http_server.PaginationRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
+	blogs, totalCount, err := h.blogService.ListBlogs(c.Request().Context(), paginationReq)
 	if err != nil {
-		slog.Error("Failed to list blogs",
-			slog.String("error", err.Error()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to list blogs", err)
+		return h.translateServiceError(c, err, "Failed to list blogs")
 	}
 
-	return server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
+	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
+
+	return http_server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
 }
 
 // GetBlogsByAuthor retrieves blogs by author ID with pagination
@@ -248,7 +251,7 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 		slog.Warn("Invalid author ID parameter",
 			slog.String("author_id", authorIDParam),
 		)
-		return server.BadRequestResponse(c, "Invalid author UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid author UUID format", err)
 	}
 
 	pageParam := c.QueryParam("page")
@@ -268,16 +271,19 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 		}
 	}
 
-	blogs, pagination, err := h.blogService.GetBlogsByAuthor(c.Request().Context(), authorID, page, pageSize)
+	paginationReq := http_server.PaginationRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
+	blogs, totalCount, err := h.blogService.GetBlogsByAuthor(c.Request().Context(), authorID, paginationReq)
 	if err != nil {
-		slog.Error("Failed to get blogs by author",
-			slog.String("error", err.Error()),
-			slog.String("author_id", authorID.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to get blogs by author", err)
+		return h.translateServiceError(c, err, "Failed to get blogs by author")
 	}
 
-	return server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
+	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
+
+	return http_server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
 }
 
 // GetBlogsByStatus retrieves blogs by status with pagination
@@ -296,7 +302,7 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 	status := c.Param("status")
 	if status == "" {
-		return server.BadRequestResponse(c, "Status is required", nil)
+		return http_server.BadRequestResponse(c, "Status is required", nil)
 	}
 
 	pageParam := c.QueryParam("page")
@@ -316,16 +322,19 @@ func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 		}
 	}
 
-	blogs, pagination, err := h.blogService.GetBlogsByStatus(c.Request().Context(), status, page, pageSize)
+	paginationReq := http_server.PaginationRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
+	blogs, totalCount, err := h.blogService.GetBlogsByStatus(c.Request().Context(), status, paginationReq)
 	if err != nil {
-		slog.Error("Failed to get blogs by status",
-			slog.String("error", err.Error()),
-			slog.String("status", status),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to get blogs by status", err)
+		return h.translateServiceError(c, err, "Failed to get blogs by status")
 	}
 
-	return server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
+	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
+
+	return http_server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
 }
 
 // PublishBlog publishes a blog by ID
@@ -347,22 +356,15 @@ func (h *BlogHandler) PublishBlog(c echo.Context) error {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	blog, err := h.blogService.PublishBlog(c.Request().Context(), id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return server.NotFoundResponse(c, "Blog not found", err)
-		}
-		slog.Error("Failed to publish blog",
-			slog.String("error", err.Error()),
-			slog.String("blog_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to publish blog", err)
+		return h.translateServiceError(c, err, "Failed to publish blog")
 	}
 
-	return server.SuccessResponse(c, "Blog published successfully", blog)
+	return http_server.SuccessResponse(c, "Blog published successfully", blog)
 }
 
 // ArchiveBlog archives a blog by ID
@@ -384,52 +386,17 @@ func (h *BlogHandler) ArchiveBlog(c echo.Context) error {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
+		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	blog, err := h.blogService.ArchiveBlog(c.Request().Context(), id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBlogNotFound) {
-			return server.NotFoundResponse(c, "Blog not found", err)
-		}
-		slog.Error("Failed to archive blog",
-			slog.String("error", err.Error()),
-			slog.String("blog_id", id.String()),
-		)
-		return server.InternalServerErrorResponse(c, "Failed to archive blog", err)
+		return h.translateServiceError(c, err, "Failed to archive blog")
 	}
 
-	return server.SuccessResponse(c, "Blog archived successfully", blog)
+	return http_server.SuccessResponse(c, "Blog archived successfully", blog)
 }
 
-func (h *BlogHandler) validateCreateBlogRequest(req service.CreateBlogRequest) error {
-	if req.Title == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "title is required")
-	}
-	if len(req.Title) < 2 || len(req.Title) > 200 {
-		return echo.NewHTTPError(http.StatusBadRequest, "title must be between 2 and 200 characters")
-	}
-	if req.Content == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "content is required")
-	}
-	if len(req.Content) < 10 {
-		return echo.NewHTTPError(http.StatusBadRequest, "content must be at least 10 characters")
-	}
-	if req.AuthorID == uuid.Nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "author_id is required")
-	}
-	return nil
-}
-
-func (h *BlogHandler) validateUpdateBlogRequest(req service.UpdateBlogRequest) error {
-	if req.Title != "" && (len(req.Title) < 2 || len(req.Title) > 200) {
-		return echo.NewHTTPError(http.StatusBadRequest, "title must be between 2 and 200 characters")
-	}
-	if req.Content != "" && len(req.Content) < 10 {
-		return echo.NewHTTPError(http.StatusBadRequest, "content must be at least 10 characters")
-	}
-	return nil
-}
 
 // SetupRoutes configures all API routes for blogs
 func (h *BlogHandler) SetupRoutes(api *echo.Group) {

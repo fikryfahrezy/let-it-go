@@ -7,9 +7,9 @@ import (
 )
 
 type UpdateBlogRequest struct {
-	Title   string `json:"title,omitempty"`
-	Content string `json:"content,omitempty"`
-	Status  string `json:"status,omitempty"`
+	Title   string `json:"title,omitempty" validate:"omitempty,min=3,max=200"`
+	Content string `json:"content,omitempty" validate:"omitempty,min=10"`
+	Status  string `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
 }
 
 func (req UpdateBlogRequest) ApplyToEntity(blog repository.Blog) {

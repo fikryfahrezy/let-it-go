@@ -8,10 +8,10 @@ import (
 )
 
 type CreateBlogRequest struct {
-	Title    string `json:"title"`
-	Content  string `json:"content"`
-	AuthorID uuid.UUID `json:"author_id"`
-	Status   string `json:"status"`
+	Title    string    `json:"title" validate:"required,min=3,max=200"`
+	Content  string    `json:"content" validate:"required,min=10"`
+	AuthorID uuid.UUID `json:"author_id" validate:"required"`
+	Status   string    `json:"status" validate:"required,oneof=draft published archived"`
 }
 
 func (req CreateBlogRequest) ToEntity() repository.Blog {
