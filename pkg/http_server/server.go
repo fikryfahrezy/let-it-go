@@ -45,7 +45,7 @@ func (s *Server) Initialize(handlers []RouteHandler) error {
 	e.Validator = NewCustomValidator()
 
 	// Configure middleware
-	e.Use(middleware.Logger())
+	// e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
