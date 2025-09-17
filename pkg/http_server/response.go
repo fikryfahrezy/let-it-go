@@ -64,7 +64,8 @@ func ListSuccessResponse(c echo.Context, message string, data any, pagination Pa
 }
 
 func ErrorResponse(c echo.Context, statusCode int, message string, err error) error {
-	var errorCode string
+	errorCode := "UNKNOWN_ERROR"
+	errorMessage := message
 	var errorFields map[string]any
 
 	if err != nil {
@@ -73,12 +74,19 @@ func ErrorResponse(c echo.Context, statusCode int, message string, err error) er
 		if code != "" {
 			errorCode = code
 		}
+
+		// Extract error message if it's an AppError
+		message := app_error.GetMessage(err)
+		if message != "" {
+			errorMessage = message
+		}
+
 		// You can add error fields parsing here if needed
 		errorFields = map[string]any{}
 	}
 
 	return c.JSON(statusCode, APIResponse{
-		Message:     message,
+		Message:     errorMessage,
 		Error:       errorCode,
 		ErrorFields: errorFields,
 	})
