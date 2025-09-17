@@ -1,6 +1,6 @@
-# 3-Tier Go Application
+# Let It Go
 
-A future-proof, object-oriented 3-tier Go application built with Echo framework, MySQL database, and structured logging using slog.
+A 3-tier Go application built with Echo framework, MySQL database, and structured logging using slog.
 
 ## Architecture
 
@@ -19,6 +19,8 @@ This application follows a feature-based architecture pattern:
   - `delete.go` - Delete method implementation
   - `list.go` - List method implementation
   - `count.go` - Count method implementation
+  - `test_suite.go` - Shared test suite setup with testcontainer
+  - `*_test.go` - Individual test files for each method
 - **Service Package**: `feature/<feature_name>/service/`
   - `service.go` - Service implementation
   - `service_interface.go` - Service interface
@@ -53,7 +55,9 @@ project-root/
 │       │   ├── update.go
 │       │   ├── delete.go
 │       │   ├── list.go
-│       │   └── count.go
+│       │   ├── count.go
+│       │   ├── test_suite.go
+│       │   └── *_test.go
 │       ├── service/     # Business logic layer
 │       │   ├── service.go
 │       │   ├── service_interface.go
@@ -84,20 +88,14 @@ project-root/
 - Go 1.25 or higher
 - Make (optional, for build automation)
 
-## API Documentation
+## Quick Start
 
-This application includes interactive API documentation using Swagger/OpenAPI:
-
-- **Generate docs**: `make swagger`
-- **View docs**: Start the server and visit `http://localhost:8080/swagger/`
-- **API Base**: All endpoints are under `/api` path
-
-## Setup
+### Local Development
 
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd <project-name>
+   cd let-it-go
    ```
 
 2. **Install dependencies**:
@@ -107,39 +105,58 @@ This application includes interactive API documentation using Swagger/OpenAPI:
    go mod download
    ```
 
-3. **Setup environment** (optional):
+3. **Setup environment**:
    ```bash
    cp .env.example .env
+   # Edit .env with your database connection details
    ```
 
-4. **Configure environment variables**: Edit `.env` file with your specific values for database connection, server settings, and logging preferences.
-
-5. **Setup database and run migrations**:
+4. **Setup database and run migrations**:
    ```bash
-   # Run migrations using custom migration tool
    make migrate-up
-   
-   # Check migration version
-   make migrate-version
    ```
 
-6. **Generate API documentation**:
+5. **Generate API documentation**:
    ```bash
    make swagger
    ```
 
-## Running the Application
+6. **Start the server**:
+   ```bash
+   make run
+   ```
 
-### Development
+## Testing
+
 ```bash
-make run
-# or
-go run cmd/http_server/main.go
+# Run all tests
+make test
+
+# Run unit tests only (short tests)
+make test-unit
+
+# Skip integration tests (uses SKIP_INTEGRATION_TESTS environment variable)
+SKIP_INTEGRATION_TESTS=true go test ./...
 ```
 
-### Production Build
+## Running the Application
+
+### With Docker
+
 ```bash
-make build
+docker-compose up --build
+```
+
+### Local Build
+
+**Development:**
+```bash
+make run
+```
+
+**Production Build:**
+```bash
+make build-production
 ./bin/server
 ```
 

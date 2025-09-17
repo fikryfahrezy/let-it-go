@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: let-it-go-app
+    env_file:
+      - path: ./.env
+        required: true
+    restart: unless-stopped

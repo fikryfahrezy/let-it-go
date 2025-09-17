@@ -43,7 +43,7 @@ func (h *BlogHandler) translateServiceError(c echo.Context, err error, defaultMe
 	if errors.Is(err, service.ErrFailedToArchiveBlog) {
 		return http_server.InternalServerErrorResponse(c, "Failed to archive blog", err)
 	}
-	
+
 	// Log unexpected errors
 	slog.Error("Service error",
 		slog.String("error", err.Error()),
@@ -59,9 +59,9 @@ func (h *BlogHandler) translateServiceError(c echo.Context, err error, defaultMe
 // @Accept json
 // @Produce json
 // @Param blog body service.CreateBlogRequest true "Blog creation request"
-// @Success 201 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 201 {object} http_server.APIResponse{result=service.GetBlogResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs [post]
 func (h *BlogHandler) CreateBlog(c echo.Context) error {
 	var req service.CreateBlogRequest
@@ -91,10 +91,10 @@ func (h *BlogHandler) CreateBlog(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "Blog ID"
-// @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse{result=service.GetBlogResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs/{id} [get]
 func (h *BlogHandler) GetBlog(c echo.Context) error {
 	idParam := c.Param("id")
@@ -122,10 +122,10 @@ func (h *BlogHandler) GetBlog(c echo.Context) error {
 // @Produce json
 // @Param id path string true "Blog ID"
 // @Param blog body service.UpdateBlogRequest true "Blog update request"
-// @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse{result=service.GetBlogResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs/{id} [put]
 func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 	idParam := c.Param("id")
@@ -164,10 +164,10 @@ func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "Blog ID"
-// @Success 200 {object} APIResponse
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs/{id} [delete]
 func (h *BlogHandler) DeleteBlog(c echo.Context) error {
 	idParam := c.Param("id")
@@ -195,8 +195,8 @@ func (h *BlogHandler) DeleteBlog(c echo.Context) error {
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} ListAPIResponse{data=[]service.GetBlogResponse}
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.ListAPIResponse{result=[]service.GetBlogResponse}
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs [get]
 func (h *BlogHandler) ListBlogs(c echo.Context) error {
 	pageParam := c.QueryParam("page")
@@ -240,9 +240,9 @@ func (h *BlogHandler) ListBlogs(c echo.Context) error {
 // @Param author_id path string true "Author ID"
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} ListAPIResponse{data=[]service.GetBlogResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.ListAPIResponse{result=[]service.GetBlogResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs/author/{author_id} [get]
 func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 	authorIDParam := c.Param("author_id")
@@ -295,9 +295,9 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 // @Param status path string true "Blog status" Enums(draft, published, archived)
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} ListAPIResponse{data=[]service.GetBlogResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.ListAPIResponse{result=[]service.GetBlogResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs/status/{status} [get]
 func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 	status := c.Param("status")
@@ -344,10 +344,10 @@ func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "Blog ID"
-// @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse{result=service.GetBlogResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs/{id}/publish [post]
 func (h *BlogHandler) PublishBlog(c echo.Context) error {
 	idParam := c.Param("id")
@@ -374,10 +374,10 @@ func (h *BlogHandler) PublishBlog(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "Blog ID"
-// @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse{result=service.GetBlogResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/blogs/{id}/archive [post]
 func (h *BlogHandler) ArchiveBlog(c echo.Context) error {
 	idParam := c.Param("id")
@@ -396,7 +396,6 @@ func (h *BlogHandler) ArchiveBlog(c echo.Context) error {
 
 	return http_server.SuccessResponse(c, "Blog archived successfully", blog)
 }
-
 
 // SetupRoutes configures all API routes for blogs
 func (h *BlogHandler) SetupRoutes(api *echo.Group) {

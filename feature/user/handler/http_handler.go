@@ -35,7 +35,7 @@ func (h *UserHandler) translateServiceError(c echo.Context, err error, defaultMe
 	if errors.Is(err, repository.ErrUserNotFound) {
 		return http_server.NotFoundResponse(c, "User not found", err)
 	}
-	
+
 	// Log unexpected errors
 	slog.Error("Service error",
 		slog.String("error", err.Error()),
@@ -51,9 +51,9 @@ func (h *UserHandler) translateServiceError(c echo.Context, err error, defaultMe
 // @Accept json
 // @Produce json
 // @Param user body service.CreateUserRequest true "User creation request"
-// @Success 201 {object} APIResponse{data=service.GetUserResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 201 {object} http_server.APIResponse{result=service.GetUserResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/users [post]
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	var req service.CreateUserRequest
@@ -83,10 +83,10 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} APIResponse{data=service.GetUserResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse{result=service.GetUserResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/users/{id} [get]
 func (h *UserHandler) GetUser(c echo.Context) error {
 	idParam := c.Param("id")
@@ -114,10 +114,10 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 // @Produce json
 // @Param id path string true "User ID"
 // @Param user body service.UpdateUserRequest true "User update request"
-// @Success 200 {object} APIResponse{data=service.GetUserResponse}
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse{result=service.GetUserResponse}
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/users/{id} [put]
 func (h *UserHandler) UpdateUser(c echo.Context) error {
 	idParam := c.Param("id")
@@ -156,10 +156,10 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} APIResponse
-// @Failure 400 {object} APIResponse
-// @Failure 404 {object} APIResponse
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.APIResponse
+// @Failure 400 {object} http_server.APIResponse
+// @Failure 404 {object} http_server.APIResponse
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/users/{id} [delete]
 func (h *UserHandler) DeleteUser(c echo.Context) error {
 	idParam := c.Param("id")
@@ -187,8 +187,8 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} ListAPIResponse{data=[]service.GetUserResponse}
-// @Failure 500 {object} APIResponse
+// @Success 200 {object} http_server.ListAPIResponse{result=[]service.GetUserResponse}
+// @Failure 500 {object} http_server.APIResponse
 // @Router /v1/users [get]
 func (h *UserHandler) ListUsers(c echo.Context) error {
 	pageParam := c.QueryParam("page")
@@ -229,7 +229,6 @@ func (h *UserHandler) HealthCheck(c echo.Context) error {
 		"message": "Service is healthy",
 	})
 }
-
 
 // SetupRoutes configures all versioned API routes for users
 func (h *UserHandler) SetupRoutes(api *echo.Group) {

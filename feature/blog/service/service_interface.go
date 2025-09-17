@@ -1,5 +1,7 @@
 package service
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o servicefakes/fake_blog_service.go . BlogService
+
 import (
 	"context"
 

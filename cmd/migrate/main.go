@@ -190,11 +190,11 @@ func createMigration(name string) error {
 	downContent := fmt.Sprintf("-- Migration: %s\n-- Created: %s\n\n-- Add your DOWN migration here\n",
 		name, time.Now().Format(time.RFC3339))
 
-	if err := os.WriteFile(upFile, []byte(upContent), 0644); err != nil {
+	if err := os.WriteFile(upFile, []byte(upContent), 0o644); err != nil {
 		return fmt.Errorf("failed to create up migration file: %w", err)
 	}
 
-	if err := os.WriteFile(downFile, []byte(downContent), 0644); err != nil {
+	if err := os.WriteFile(downFile, []byte(downContent), 0o644); err != nil {
 		return fmt.Errorf("failed to create down migration file: %w", err)
 	}
 

@@ -74,8 +74,13 @@ func (s *Server) Initialize(handlers []RouteHandler) error {
 
 // setupAPIRoutes configures all API routes for all versions
 func (s *Server) setupAPIRoutes(e *echo.Echo, handlers []RouteHandler) {
-	// Swagger documentation
+	// Swagger documentation - accessible at /swagger/index.html
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	
+	// Redirect /swagger to /swagger/index.html for convenience
+	e.GET("/swagger", func(c echo.Context) error {
+		return c.Redirect(302, "/swagger/index.html")
+	})
 	
 	api := e.Group("/api")
 	

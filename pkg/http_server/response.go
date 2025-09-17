@@ -11,16 +11,16 @@ import (
 type APIResponse struct {
 	Message     string         `json:"message"`
 	Error       string         `json:"error"`
-	ErrorFields map[string]any `json:"error_fields,omitempty"`
-	Result      any            `json:"result,omitempty"`
+	ErrorFields map[string]any `json:"error_fields"`
+	Result      any            `json:"result"`
 }
 
 // ListAPIResponse represents a paginated API response
 type ListAPIResponse struct {
 	Message     string              `json:"message"`
 	Error       string              `json:"error"`
-	ErrorFields map[string]any      `json:"error_fields,omitempty"`
-	Result      any                 `json:"result,omitempty"`
+	ErrorFields map[string]any      `json:"error_fields"`
+	Result      any                 `json:"result"`
 	Pagination  *PaginationResponse `json:"pagination,omitempty"`
 }
 
