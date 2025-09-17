@@ -13,7 +13,7 @@ jobs:
   lint:
     strategy:
       matrix:
-        go: ['>=1.22.0']
+        go: ['>=1.24.0']
         os: [ubuntu-24.04]
     name: lint
     runs-on: ${{ matrix.os }}
@@ -30,7 +30,7 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        go: ['>=1.22.0']
+        go: ['>=1.24.0']
         os: [ubuntu-24.04]
     name: test
     runs-on: ${{ matrix.os }}
