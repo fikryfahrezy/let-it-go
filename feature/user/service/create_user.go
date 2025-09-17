@@ -12,7 +12,7 @@ import (
 )
 
 func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (CreateUserResponse, error) {
-	slog.Info("Creating new user",
+	s.log.Info("Creating new user",
 		slog.String("email", req.Email),
 		slog.String("name", req.Name),
 	)
@@ -26,7 +26,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (Cr
 		// User not found is expected for creation, continue
 	} else if existingUser.ID != uuid.Nil {
 		// User found, return business logic error
-		slog.Warn("User already exists",
+		s.log.Warn("User already exists",
 			slog.String("email", req.Email),
 		)
 		return CreateUserResponse{}, ErrUserAlreadyExists
@@ -34,7 +34,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (Cr
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		slog.Error("Failed to hash password",
+		s.log.Error("Failed to hash password",
 			slog.String("error", err.Error()),
 		)
 		return CreateUserResponse{}, fmt.Errorf("%w: %w", ErrFailedToHashPassword, err)
@@ -51,7 +51,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (Cr
 	}
 
 	response := ToCreateUserResponse(user)
-	slog.Info("User created successfully",
+	s.log.Info("User created successfully",
 		slog.String("user_id", user.ID.String()),
 		slog.String("email", user.Email),
 	)

@@ -8,11 +8,10 @@ import (
 )
 
 func (s *userService) ListUsers(ctx context.Context, req http_server.PaginationRequest) ([]ListUsersResponse, int, error) {
-	slog.Info("Listing users",
+	s.log.Info("Listing users",
 		slog.Int("page", req.Page),
 		slog.Int("page_size", req.PageSize),
 	)
-
 
 	offset := (req.Page - 1) * req.PageSize
 
@@ -32,8 +31,7 @@ func (s *userService) ListUsers(ctx context.Context, req http_server.PaginationR
 		responses = append(responses, response)
 	}
 
-
-	slog.Info("Users listed successfully",
+	s.log.Info("Users listed successfully",
 		slog.Int("count", len(responses)),
 		slog.Int("total", total),
 	)

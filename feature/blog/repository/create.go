@@ -14,7 +14,7 @@ func (r *blogRepository) Create(ctx context.Context, blog Blog) error {
 		INSERT INTO blogs (id, title, content, author_id, status, published_at, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	
+
 	now := time.Now()
 	blog.CreatedAt = now
 	blog.UpdatedAt = now
@@ -24,7 +24,7 @@ func (r *blogRepository) Create(ctx context.Context, blog Blog) error {
 
 	_, err := r.db.ExecContext(ctx, query, blog.ID, blog.Title, blog.Content, blog.AuthorID, blog.Status, blog.PublishedAt, now, now)
 	if err != nil {
-		slog.Error("Failed to create blog",
+		r.log.Error("Failed to create blog",
 			slog.String("error", err.Error()),
 			slog.String("title", blog.Title),
 		)
@@ -33,7 +33,7 @@ func (r *blogRepository) Create(ctx context.Context, blog Blog) error {
 
 	// No need to get last insert ID since we're using UUIDs
 
-	slog.Info("Blog created successfully",
+	r.log.Info("Blog created successfully",
 		slog.String("blog_id", blog.ID.String()),
 		slog.String("title", blog.Title),
 	)

@@ -13,7 +13,7 @@ func (r *blogRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		slog.Error("Failed to delete blog",
+		r.log.Error("Failed to delete blog",
 			slog.String("error", err.Error()),
 			slog.String("blog_id", id.String()),
 		)
@@ -22,7 +22,7 @@ func (r *blogRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		slog.Error("Failed to get rows affected",
+		r.log.Error("Failed to get rows affected",
 			slog.String("error", err.Error()),
 		)
 		return fmt.Errorf("%w: %w", ErrFailedToGetRowsAffected, err)
@@ -32,7 +32,7 @@ func (r *blogRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		return ErrBlogNotFound
 	}
 
-	slog.Info("Blog deleted successfully",
+	r.log.Info("Blog deleted successfully",
 		slog.String("blog_id", id.String()),
 	)
 

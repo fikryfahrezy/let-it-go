@@ -3,8 +3,8 @@ package service
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
+	"github.com/google/uuid"
 )
 
 type CreateUserRequest struct {

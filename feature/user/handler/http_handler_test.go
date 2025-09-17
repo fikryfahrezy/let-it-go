@@ -13,6 +13,7 @@ import (
 	"github.com/fikryfahrezy/let-it-go/feature/user/service"
 	"github.com/fikryfahrezy/let-it-go/feature/user/service/servicefakes"
 	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ func TestUserHandler_CreateUser_Success(t *testing.T) {
 	}
 	mockService.CreateUserReturns(expectedResponse, nil)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	requestBody := service.CreateUserRequest{
@@ -67,7 +68,7 @@ func TestUserHandler_CreateUser_Success(t *testing.T) {
 
 func TestUserHandler_CreateUser_ValidationError(t *testing.T) {
 	mockService := &servicefakes.FakeUserService{}
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	// Missing required fields
@@ -95,7 +96,7 @@ func TestUserHandler_CreateUser_ServiceError(t *testing.T) {
 	mockService := &servicefakes.FakeUserService{}
 	mockService.CreateUserReturns(service.CreateUserResponse{}, service.ErrUserAlreadyExists)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	requestBody := service.CreateUserRequest{
@@ -131,7 +132,7 @@ func TestUserHandler_GetUser_Success(t *testing.T) {
 	}
 	mockService.GetUserByIDReturns(expectedResponse, nil)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users/"+userID.String(), nil)
@@ -153,7 +154,7 @@ func TestUserHandler_GetUser_Success(t *testing.T) {
 
 func TestUserHandler_GetUser_InvalidUUID(t *testing.T) {
 	mockService := &servicefakes.FakeUserService{}
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users/invalid-uuid", nil)
@@ -176,7 +177,7 @@ func TestUserHandler_GetUser_NotFound(t *testing.T) {
 	userID := uuid.New()
 	mockService.GetUserByIDReturns(service.GetUserResponse{}, repository.ErrUserNotFound)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users/"+userID.String(), nil)
@@ -206,7 +207,7 @@ func TestUserHandler_ListUsers_Success(t *testing.T) {
 		},
 		{
 			ID:        uuid.New(),
-			Name:      "Jane Doe", 
+			Name:      "Jane Doe",
 			Email:     "jane@example.com",
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -214,7 +215,7 @@ func TestUserHandler_ListUsers_Success(t *testing.T) {
 	}
 	mockService.ListUsersReturns(expectedUsers, 2, nil)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users", nil)
@@ -245,7 +246,7 @@ func TestUserHandler_ListUsers_WithPagination(t *testing.T) {
 	}
 	mockService.ListUsersReturns(expectedUsers, 1, nil)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users?page=2&page_size=5", nil)
@@ -268,7 +269,7 @@ func TestUserHandler_DeleteUser_Success(t *testing.T) {
 	userID := uuid.New()
 	mockService.DeleteUserReturns(nil)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/v1/users/"+userID.String(), nil)
@@ -293,7 +294,7 @@ func TestUserHandler_DeleteUser_NotFound(t *testing.T) {
 	userID := uuid.New()
 	mockService.DeleteUserReturns(repository.ErrUserNotFound)
 
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/v1/users/"+userID.String(), nil)
@@ -313,7 +314,7 @@ func TestUserHandler_DeleteUser_NotFound(t *testing.T) {
 
 func TestUserHandler_HealthCheck(t *testing.T) {
 	mockService := &servicefakes.FakeUserService{}
-	userHandler := handler.NewUserHandler(mockService)
+	userHandler := handler.NewUserHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)

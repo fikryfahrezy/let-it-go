@@ -16,11 +16,13 @@ import (
 
 type UserHandler struct {
 	userService service.UserService
+	log         *slog.Logger
 }
 
-func NewUserHandler(userService service.UserService) *UserHandler {
+func NewUserHandler(log *slog.Logger, userService service.UserService) *UserHandler {
 	return &UserHandler{
 		userService: userService,
+		log:         log,
 	}
 }
 
@@ -37,7 +39,7 @@ func (h *UserHandler) translateServiceError(c echo.Context, err error, defaultMe
 	}
 
 	// Log unexpected errors
-	slog.Error("Service error",
+	h.log.Error("Service error",
 		slog.String("error", err.Error()),
 		slog.String("operation", defaultMessage),
 	)
@@ -58,7 +60,7 @@ func (h *UserHandler) translateServiceError(c echo.Context, err error, defaultMe
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	var req service.CreateUserRequest
 	if err := c.Bind(&req); err != nil {
-		slog.Error("Failed to bind request",
+		h.log.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
 		return http_server.BadRequestResponse(c, "Invalid request format", err)
@@ -92,7 +94,7 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid user ID parameter",
+		h.log.Warn("Invalid user ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid user UUID format", err)
@@ -123,7 +125,7 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid user ID parameter",
+		h.log.Warn("Invalid user ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid user UUID format", err)
@@ -131,7 +133,7 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 
 	var req service.UpdateUserRequest
 	if err := c.Bind(&req); err != nil {
-		slog.Error("Failed to bind request",
+		h.log.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
 		return http_server.BadRequestResponse(c, "Invalid request format", err)
@@ -165,7 +167,7 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid user ID parameter",
+		h.log.Warn("Invalid user ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid user UUID format", err)

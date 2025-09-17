@@ -24,7 +24,7 @@ func (r *userRepository) Create(ctx context.Context, user User) error {
 
 	_, err := r.db.ExecContext(ctx, query, user.ID, user.Name, user.Email, user.Password, now, now)
 	if err != nil {
-		slog.Error("Failed to create user",
+		r.log.Error("Failed to create user",
 			slog.String("error", err.Error()),
 			slog.String("email", user.Email),
 		)
@@ -33,7 +33,7 @@ func (r *userRepository) Create(ctx context.Context, user User) error {
 
 	// No need to get last insert ID since we're using UUIDs
 
-	slog.Info("User created successfully",
+	r.log.Info("User created successfully",
 		slog.String("user_id", user.ID.String()),
 		slog.String("email", user.Email),
 	)

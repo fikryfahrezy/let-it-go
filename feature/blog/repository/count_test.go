@@ -1,92 +1,110 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
-func (suite *BlogRepositoryTestSuite) TestCount() {
+func TestCount(t *testing.T) {
+	authorID := setupTest(t)
+
 	// Initially empty
-	count, err := suite.repository.Count(suite.ctx)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 0, count)
+	count, err := testRepository.Count(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 0 {
+		t.Errorf("Expected count 0, got %d", count)
+	}
 
 	// Create test blogs
-	blogs := []Blog{
+	blogs := []repository.Blog{
 		{
 			Title:    "Blog 1",
 			Content:  "Content 1",
-			AuthorID: suite.authorID,
-			Status:   StatusDraft,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 		{
 			Title:    "Blog 2",
 			Content:  "Content 2",
-			AuthorID: suite.authorID,
-			Status:   StatusPublished,
+			AuthorID: authorID,
+			Status:   repository.StatusPublished,
 		},
 	}
 
 	for _, blog := range blogs {
-		err := suite.repository.Create(suite.ctx, blog)
-		require.NoError(suite.T(), err)
+		err := testRepository.Create(context.Background(), blog)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
-	count, err = suite.repository.Count(suite.ctx)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 2, count)
+	count, err = testRepository.Count(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Errorf("Expected count 2, got %d", count)
+	}
 }
 
-func (suite *BlogRepositoryTestSuite) TestCountByStatus() {
+func TestCountByStatus(t *testing.T) {
+	authorID := setupTest(t)
+
 	// Create test blogs with different statuses
-	blogs := []Blog{
+	blogs := []repository.Blog{
 		{
 			Title:    "Draft Blog 1",
 			Content:  "Content 1",
-			AuthorID: suite.authorID,
-			Status:   StatusDraft,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 		{
 			Title:    "Draft Blog 2",
 			Content:  "Content 2",
-			AuthorID: suite.authorID,
-			Status:   StatusDraft,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 		{
 			Title:    "Published Blog",
 			Content:  "Content 3",
-			AuthorID: suite.authorID,
-			Status:   StatusPublished,
+			AuthorID: authorID,
+			Status:   repository.StatusPublished,
 		},
 	}
 
 	for _, blog := range blogs {
-		err := suite.repository.Create(suite.ctx, blog)
-		require.NoError(suite.T(), err)
+		err := testRepository.Create(context.Background(), blog)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	// Test count by status
-	count, err := suite.repository.CountByStatus(suite.ctx, StatusDraft)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 2, count)
-
-	count, err = suite.repository.CountByStatus(suite.ctx, StatusPublished)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 1, count)
-
-	count, err = suite.repository.CountByStatus(suite.ctx, StatusArchived)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 0, count)
-}
-
-func TestBlogCountTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+	count, err := testRepository.CountByStatus(context.Background(), repository.StatusDraft)
+	if err != nil {
+		t.Fatal(err)
 	}
-	
-	suite.Run(t, new(BlogRepositoryTestSuite))
+	if count != 2 {
+		t.Errorf("Expected draft count 2, got %d", count)
+	}
+
+	count, err = testRepository.CountByStatus(context.Background(), repository.StatusPublished)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Errorf("Expected published count 1, got %d", count)
+	}
+
+	count, err = testRepository.CountByStatus(context.Background(), repository.StatusArchived)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 0 {
+		t.Errorf("Expected archived count 0, got %d", count)
+	}
 }

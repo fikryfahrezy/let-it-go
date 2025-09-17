@@ -1,59 +1,74 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
+	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 )
 
-func (suite *UserRepositoryTestSuite) TestCreate() {
-	user := User{
+func TestCreate(t *testing.T) {
+	setupTest(t)
+
+	user := repository.User{
 		Name:     "John Doe",
 		Email:    "john@example.com",
 		Password: "hashedpassword",
 	}
 
-	err := suite.repository.Create(suite.ctx, user)
-	assert.NoError(suite.T(), err)
+	err := testRepository.Create(context.Background(), user)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Verify user was created by email since Create generates new ID
-	result, err := suite.repository.GetByEmail(suite.ctx, user.Email)
-	assert.NoError(suite.T(), err)
-	assert.NotEqual(suite.T(), uuid.Nil, result.ID)
-	assert.Equal(suite.T(), user.Name, result.Name)
-	assert.Equal(suite.T(), user.Email, result.Email)
-	assert.Equal(suite.T(), user.Password, result.Password)
-	assert.NotZero(suite.T(), result.CreatedAt)
-	assert.NotZero(suite.T(), result.UpdatedAt)
+	result, err := testRepository.GetByEmail(context.Background(), user.Email)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.ID == uuid.Nil {
+		t.Error("Expected non-nil ID")
+	}
+	if result.Name != user.Name {
+		t.Errorf("Expected name %s, got %s", user.Name, result.Name)
+	}
+	if result.Email != user.Email {
+		t.Errorf("Expected email %s, got %s", user.Email, result.Email)
+	}
+	if result.Password != user.Password {
+		t.Errorf("Expected password %s, got %s", user.Password, result.Password)
+	}
+	if result.CreatedAt.IsZero() {
+		t.Error("Expected non-zero CreatedAt")
+	}
+	if result.UpdatedAt.IsZero() {
+		t.Error("Expected non-zero UpdatedAt")
+	}
 }
 
-func (suite *UserRepositoryTestSuite) TestCreateDuplicateEmail() {
-	user1 := User{
+func TestCreateDuplicateEmail(t *testing.T) {
+	setupTest(t)
+
+	user1 := repository.User{
 		Name:     "John Doe",
 		Email:    "john@example.com",
 		Password: "hashedpassword1",
 	}
 
-	user2 := User{
+	user2 := repository.User{
 		Name:     "Jane Doe",
 		Email:    "john@example.com", // Same email
 		Password: "hashedpassword2",
 	}
 
-	err := suite.repository.Create(suite.ctx, user1)
-	assert.NoError(suite.T(), err)
-
-	err = suite.repository.Create(suite.ctx, user2)
-	assert.Error(suite.T(), err)
-}
-
-func TestUserCreateTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+	err := testRepository.Create(context.Background(), user1)
+	if err != nil {
+		t.Fatal(err)
 	}
-	
-	suite.Run(t, new(UserRepositoryTestSuite))
+
+	err = testRepository.Create(context.Background(), user2)
+	if err == nil {
+		t.Error("Expected error for duplicate email, got nil")
+	}
 }

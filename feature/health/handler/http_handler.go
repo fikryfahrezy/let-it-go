@@ -9,9 +9,9 @@ import (
 )
 
 type HealthHandler struct {
-	db      *database.DB
-	version string
-	commit  string
+	db        *database.DB
+	version   string
+	commit    string
 	buildTime string
 }
 
@@ -28,9 +28,9 @@ func (h *HealthHandler) HealthCheck(c echo.Context) error {
 	status := "ok"
 	message := "Service is healthy"
 	httpStatus := http.StatusOK
-	
+
 	dbCheck := map[string]any{"status": "healthy"}
-	
+
 	// Check database connection
 	if err := h.db.Ping(); err != nil {
 		slog.Error("Database health check failed",
@@ -44,7 +44,7 @@ func (h *HealthHandler) HealthCheck(c echo.Context) error {
 			"error":  err.Error(),
 		}
 	}
-	
+
 	response := map[string]any{
 		"status":    status,
 		"message":   message,
@@ -55,7 +55,7 @@ func (h *HealthHandler) HealthCheck(c echo.Context) error {
 			"database": dbCheck,
 		},
 	}
-	
+
 	return c.JSON(httpStatus, response)
 }
 

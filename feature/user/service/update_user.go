@@ -10,14 +10,14 @@ import (
 )
 
 func (s *userService) UpdateUser(ctx context.Context, id uuid.UUID, req UpdateUserRequest) (UpdateUserResponse, error) {
-	slog.Info("Updating user",
+	s.log.Info("Updating user",
 		slog.String("user_id", id.String()),
 	)
 
 	user, err := s.userRepo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
-			slog.Warn("User not found",
+			s.log.Warn("User not found",
 				slog.String("user_id", id.String()),
 			)
 			return UpdateUserResponse{}, repository.ErrUserNotFound
@@ -35,7 +35,7 @@ func (s *userService) UpdateUser(ctx context.Context, id uuid.UUID, req UpdateUs
 			// User not found is expected, continue
 		} else if existingUser.ID != uuid.Nil && existingUser.ID != id {
 			// User found with different ID, return business logic error
-			slog.Warn("Email already exists",
+			s.log.Warn("Email already exists",
 				slog.String("email", req.Email),
 			)
 			return UpdateUserResponse{}, ErrUserAlreadyExists
@@ -53,7 +53,7 @@ func (s *userService) UpdateUser(ctx context.Context, id uuid.UUID, req UpdateUs
 	}
 
 	response := ToUpdateUserResponse(user)
-	slog.Info("User updated successfully",
+	s.log.Info("User updated successfully",
 		slog.String("user_id", id.String()),
 	)
 

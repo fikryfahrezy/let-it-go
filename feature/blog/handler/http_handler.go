@@ -15,11 +15,13 @@ import (
 
 type BlogHandler struct {
 	blogService service.BlogService
+	log         *slog.Logger
 }
 
-func NewBlogHandler(blogService service.BlogService) *BlogHandler {
+func NewBlogHandler(log *slog.Logger, blogService service.BlogService) *BlogHandler {
 	return &BlogHandler{
 		blogService: blogService,
+		log:         log,
 	}
 }
 
@@ -45,7 +47,7 @@ func (h *BlogHandler) translateServiceError(c echo.Context, err error, defaultMe
 	}
 
 	// Log unexpected errors
-	slog.Error("Service error",
+	h.log.Error("Service error",
 		slog.String("error", err.Error()),
 		slog.String("operation", defaultMessage),
 	)
@@ -66,7 +68,7 @@ func (h *BlogHandler) translateServiceError(c echo.Context, err error, defaultMe
 func (h *BlogHandler) CreateBlog(c echo.Context) error {
 	var req service.CreateBlogRequest
 	if err := c.Bind(&req); err != nil {
-		slog.Error("Failed to bind request",
+		h.log.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
 		return http_server.BadRequestResponse(c, "Invalid request format", err)
@@ -100,7 +102,7 @@ func (h *BlogHandler) GetBlog(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid blog ID parameter",
+		h.log.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
@@ -131,7 +133,7 @@ func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid blog ID parameter",
+		h.log.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
@@ -139,7 +141,7 @@ func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 
 	var req service.UpdateBlogRequest
 	if err := c.Bind(&req); err != nil {
-		slog.Error("Failed to bind request",
+		h.log.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
 		return http_server.BadRequestResponse(c, "Invalid request format", err)
@@ -173,7 +175,7 @@ func (h *BlogHandler) DeleteBlog(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid blog ID parameter",
+		h.log.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
@@ -248,7 +250,7 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 	authorIDParam := c.Param("author_id")
 	authorID, err := uuid.Parse(authorIDParam)
 	if err != nil {
-		slog.Warn("Invalid author ID parameter",
+		h.log.Warn("Invalid author ID parameter",
 			slog.String("author_id", authorIDParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid author UUID format", err)
@@ -353,7 +355,7 @@ func (h *BlogHandler) PublishBlog(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid blog ID parameter",
+		h.log.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)
@@ -383,7 +385,7 @@ func (h *BlogHandler) ArchiveBlog(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		slog.Warn("Invalid blog ID parameter",
+		h.log.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
 		return http_server.BadRequestResponse(c, "Invalid blog UUID format", err)

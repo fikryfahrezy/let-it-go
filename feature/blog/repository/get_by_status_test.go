@@ -1,71 +1,83 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
-func (suite *BlogRepositoryTestSuite) TestGetByStatus() {
+func TestGetByStatus(t *testing.T) {
+	authorID := setupTest(t)
+
 	// Create test blogs with different statuses
-	blogs := []Blog{
+	blogs := []repository.Blog{
 		{
 			Title:    "Draft Blog 1",
 			Content:  "Content 1",
-			AuthorID: suite.authorID,
-			Status:   StatusDraft,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 		{
 			Title:    "Draft Blog 2",
 			Content:  "Content 2",
-			AuthorID: suite.authorID,
-			Status:   StatusDraft,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 		{
 			Title:    "Published Blog",
 			Content:  "Content 3",
-			AuthorID: suite.authorID,
-			Status:   StatusPublished,
+			AuthorID: authorID,
+			Status:   repository.StatusPublished,
 		},
 		{
 			Title:    "Archived Blog",
 			Content:  "Content 4",
-			AuthorID: suite.authorID,
-			Status:   StatusArchived,
+			AuthorID: authorID,
+			Status:   repository.StatusArchived,
 		},
 	}
 
 	for _, blog := range blogs {
-		err := suite.repository.Create(suite.ctx, blog)
-		require.NoError(suite.T(), err)
+		err := testRepository.Create(context.Background(), blog)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
-	// Test get blogs by status
-	result, err := suite.repository.GetByStatus(suite.ctx, StatusDraft, 10, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 2)
+	// Test get by draft status
+	result, err := testRepository.GetByStatus(context.Background(), repository.StatusDraft, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 2 {
+		t.Errorf("Expected 2 draft blogs, got %d", len(result))
+	}
 
-	result, err = suite.repository.GetByStatus(suite.ctx, StatusPublished, 10, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 1)
+	// Test get by published status
+	result, err = testRepository.GetByStatus(context.Background(), repository.StatusPublished, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		t.Errorf("Expected 1 published blog, got %d", len(result))
+	}
 
-	result, err = suite.repository.GetByStatus(suite.ctx, StatusArchived, 10, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 1)
+	// Test get by archived status
+	result, err = testRepository.GetByStatus(context.Background(), repository.StatusArchived, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		t.Errorf("Expected 1 archived blog, got %d", len(result))
+	}
 
 	// Test pagination
-	result, err = suite.repository.GetByStatus(suite.ctx, StatusDraft, 1, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 1)
-}
-
-func TestBlogGetByStatusTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+	result, err = testRepository.GetByStatus(context.Background(), repository.StatusDraft, 1, 0)
+	if err != nil {
+		t.Fatal(err)
 	}
-	
-	suite.Run(t, new(BlogRepositoryTestSuite))
+	if len(result) != 1 {
+		t.Errorf("Expected 1 draft blog with pagination, got %d", len(result))
+	}
 }

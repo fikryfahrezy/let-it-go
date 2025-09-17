@@ -19,7 +19,7 @@ func (r *userRepository) Update(ctx context.Context, user User) error {
 
 	result, err := r.db.ExecContext(ctx, query, user.Name, user.Email, now, user.ID)
 	if err != nil {
-		slog.Error("Failed to update user",
+		r.log.Error("Failed to update user",
 			slog.String("error", err.Error()),
 			slog.String("user_id", user.ID.String()),
 		)
@@ -28,7 +28,7 @@ func (r *userRepository) Update(ctx context.Context, user User) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		slog.Error("Failed to get rows affected",
+		r.log.Error("Failed to get rows affected",
 			slog.String("error", err.Error()),
 		)
 		return fmt.Errorf("%w: %w", ErrFailedToGetRowsAffected, err)
@@ -38,7 +38,7 @@ func (r *userRepository) Update(ctx context.Context, user User) error {
 		return ErrUserNotFound
 	}
 
-	slog.Info("User updated successfully",
+	r.log.Info("User updated successfully",
 		slog.String("user_id", user.ID.String()),
 	)
 

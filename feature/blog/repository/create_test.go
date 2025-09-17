@@ -1,64 +1,87 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
-func (suite *BlogRepositoryTestSuite) TestCreate() {
-	blog := Blog{
+func TestCreate(t *testing.T) {
+	authorID := setupTest(t)
+
+	blog := repository.Blog{
 		Title:    "Test Blog",
 		Content:  "This is a test blog content",
-		AuthorID: suite.authorID,
-		Status:   StatusDraft,
+		AuthorID: authorID,
+		Status:   repository.StatusDraft,
 	}
 
-	err := suite.repository.Create(suite.ctx, blog)
-	assert.NoError(suite.T(), err)
+	err := testRepository.Create(context.Background(), blog)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Verify blog was created by getting all blogs and checking the title
-	blogs, err := suite.repository.List(suite.ctx, 10, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), blogs, 1)
-	
+	blogs, err := testRepository.List(context.Background(), 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blogs) != 1 {
+		t.Errorf("Expected 1 blog, got %d", len(blogs))
+	}
+
 	result := blogs[0]
-	assert.NotEqual(suite.T(), uuid.Nil, result.ID)
-	assert.Equal(suite.T(), blog.Title, result.Title)
-	assert.Equal(suite.T(), blog.Content, result.Content)
-	assert.Equal(suite.T(), blog.AuthorID, result.AuthorID)
-	assert.Equal(suite.T(), blog.Status, result.Status)
-	assert.NotZero(suite.T(), result.CreatedAt)
-	assert.NotZero(suite.T(), result.UpdatedAt)
+	if result.ID == uuid.Nil {
+		t.Error("Expected non-nil ID")
+	}
+	if result.Title != blog.Title {
+		t.Errorf("Expected title %s, got %s", blog.Title, result.Title)
+	}
+	if result.Content != blog.Content {
+		t.Errorf("Expected content %s, got %s", blog.Content, result.Content)
+	}
+	if result.AuthorID != blog.AuthorID {
+		t.Errorf("Expected authorID %s, got %s", blog.AuthorID, result.AuthorID)
+	}
+	if result.Status != blog.Status {
+		t.Errorf("Expected status %s, got %s", blog.Status, result.Status)
+	}
+	if result.CreatedAt.IsZero() {
+		t.Error("Expected non-zero CreatedAt")
+	}
+	if result.UpdatedAt.IsZero() {
+		t.Error("Expected non-zero UpdatedAt")
+	}
 }
 
-func (suite *BlogRepositoryTestSuite) TestCreateWithPublishedStatus() {
+func TestCreateWithPublishedStatus(t *testing.T) {
+	authorID := setupTest(t)
+
 	publishedAt := time.Now().UTC()
-	blog := Blog{
+	blog := repository.Blog{
 		Title:       "Published Blog",
 		Content:     "This is a published blog content",
-		AuthorID:    suite.authorID,
-		Status:      StatusPublished,
+		AuthorID:    authorID,
+		Status:      repository.StatusPublished,
 		PublishedAt: &publishedAt,
 	}
 
-	err := suite.repository.Create(suite.ctx, blog)
-	assert.NoError(suite.T(), err)
-
-	result, err := suite.getBlogByTitle(blog.Title)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), StatusPublished, result.Status)
-	assert.NotNil(suite.T(), result.PublishedAt)
-}
-
-func TestBlogCreateTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+	err := testRepository.Create(context.Background(), blog)
+	if err != nil {
+		t.Fatal(err)
 	}
-	
-	suite.Run(t, new(BlogRepositoryTestSuite))
+
+	result, err := getBlogByTitle(blog.Title)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Status != repository.StatusPublished {
+		t.Errorf("Expected status %s, got %s", repository.StatusPublished, result.Status)
+	}
+	if result.PublishedAt == nil {
+		t.Error("Expected non-nil PublishedAt")
+	}
 }

@@ -1,16 +1,22 @@
-package service
+package service_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
+	"github.com/fikryfahrezy/let-it-go/feature/user/repository/repositoryfakes"
+	"github.com/fikryfahrezy/let-it-go/feature/user/service"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserService_GetUserByID_Success(t *testing.T) {
-	suite := SetupUserServiceTest()
+	mockRepo := &repositoryfakes.FakeUserRepository{}
+	userService := service.NewUserService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	userID := uuid.New()
 	expectedUser := repository.User{
@@ -22,9 +28,9 @@ func TestUserService_GetUserByID_Success(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
-	suite.mockRepo.GetByIDReturns(expectedUser, nil)
+	mockRepo.GetByIDReturns(expectedUser, nil)
 
-	result, err := suite.userService.GetUserByID(suite.ctx, userID)
+	result, err := userService.GetUserByID(ctx, userID)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedUser.ID, result.ID)
@@ -34,24 +40,25 @@ func TestUserService_GetUserByID_Success(t *testing.T) {
 	assert.Equal(t, expectedUser.UpdatedAt, result.UpdatedAt)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.GetByIDCallCount())
-	_, actualID := suite.mockRepo.GetByIDArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.GetByIDCallCount())
+	_, actualID := mockRepo.GetByIDArgsForCall(0)
 	assert.Equal(t, userID, actualID)
 }
 
 func TestUserService_GetUserByID_NotFound(t *testing.T) {
-	suite := SetupUserServiceTest()
+	mockRepo := &repositoryfakes.FakeUserRepository{}
+	userService := service.NewUserService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	userID := uuid.New()
-	suite.mockRepo.GetByIDReturns(repository.User{}, repository.ErrUserNotFound)
+	mockRepo.GetByIDReturns(repository.User{}, repository.ErrUserNotFound)
 
-	result, err := suite.userService.GetUserByID(suite.ctx, userID)
+	result, err := userService.GetUserByID(ctx, userID)
 
 	assert.Error(t, err)
 	assert.Equal(t, repository.ErrUserNotFound, err)
-	assert.Equal(t, GetUserResponse{}, result)
+	assert.Equal(t, service.GetUserResponse{}, result)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.GetByIDCallCount())
+	assert.Equal(t, 1, mockRepo.GetByIDCallCount())
 }
-

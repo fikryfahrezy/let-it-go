@@ -25,12 +25,11 @@ func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (User, error
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return User{}, ErrUserNotFound
 		}
-		slog.Error("Failed to get user by ID",
+		r.log.Error("Failed to get user by ID",
 			slog.String("error", err.Error()),
 			slog.String("user_id", id.String()),
 		)

@@ -1,67 +1,85 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
-func (suite *BlogRepositoryTestSuite) TestUpdate() {
-	blog := Blog{
+func TestUpdate(t *testing.T) {
+	authorID := setupTest(t)
+
+	blog := repository.Blog{
 		Title:    "Test Blog",
 		Content:  "This is a test blog content",
-		AuthorID: suite.authorID,
-		Status:   StatusDraft,
+		AuthorID: authorID,
+		Status:   repository.StatusDraft,
 	}
 
-	err := suite.repository.Create(suite.ctx, blog)
-	require.NoError(suite.T(), err)
+	err := testRepository.Create(context.Background(), blog)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	createdBlog, err := suite.getBlogByTitle(blog.Title)
-	require.NoError(suite.T(), err)
+	createdBlog, err := getBlogByTitle(blog.Title)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Update blog
-	createdBlog.Title = "Updated Blog Title"
-	createdBlog.Content = "Updated content"
-	createdBlog.Status = StatusPublished
+	// Update the blog
 	publishedAt := time.Now().UTC()
-	createdBlog.PublishedAt = &publishedAt
-
-	err = suite.repository.Update(suite.ctx, createdBlog)
-	assert.NoError(suite.T(), err)
-
-	// Verify update
-	result, err := suite.repository.GetByID(suite.ctx, createdBlog.ID)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "Updated Blog Title", result.Title)
-	assert.Equal(suite.T(), "Updated content", result.Content)
-	assert.Equal(suite.T(), StatusPublished, result.Status)
-	assert.NotNil(suite.T(), result.PublishedAt)
-}
-
-func (suite *BlogRepositoryTestSuite) TestUpdateNotFound() {
-	blog := Blog{
-		ID:       uuid.New(),
-		Title:    "Test Blog",
-		Content:  "This is a test blog content",
-		AuthorID: suite.authorID,
-		Status:   StatusDraft,
+	updatedBlog := repository.Blog{
+		ID:          createdBlog.ID,
+		Title:       "Updated Test Blog",
+		Content:     "This is updated test blog content",
+		AuthorID:    authorID,
+		Status:      repository.StatusPublished,
+		PublishedAt: &publishedAt,
 	}
 
-	err := suite.repository.Update(suite.ctx, blog)
-	assert.Error(suite.T(), err)
-	assert.Equal(suite.T(), ErrBlogNotFound, err)
+	err = testRepository.Update(context.Background(), updatedBlog)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the update
+	result, err := testRepository.GetByID(context.Background(), createdBlog.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Title != updatedBlog.Title {
+		t.Errorf("Expected title %s, got %s", updatedBlog.Title, result.Title)
+	}
+	if result.Content != updatedBlog.Content {
+		t.Errorf("Expected content %s, got %s", updatedBlog.Content, result.Content)
+	}
+	if result.Status != updatedBlog.Status {
+		t.Errorf("Expected status %s, got %s", updatedBlog.Status, result.Status)
+	}
+	if result.PublishedAt == nil {
+		t.Error("Expected non-nil PublishedAt")
+	}
 }
 
-func TestBlogUpdateTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+func TestUpdateNotFound(t *testing.T) {
+	setupTest(t)
+
+	randomID := uuid.New()
+	blog := repository.Blog{
+		ID:      randomID,
+		Title:   "Non-existent Blog",
+		Content: "Content",
+		Status:  repository.StatusDraft,
 	}
-	
-	suite.Run(t, new(BlogRepositoryTestSuite))
+
+	err := testRepository.Update(context.Background(), blog)
+	if err == nil {
+		t.Error("Expected error, got nil")
+	}
+	if err != repository.ErrBlogNotFound {
+		t.Errorf("Expected ErrBlogNotFound, got %v", err)
+	}
 }

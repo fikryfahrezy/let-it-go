@@ -12,15 +12,9 @@ This application follows a feature-based architecture pattern:
   - `entity.go` - Domain models
   - `repository.go` - Repository struct and constructor
   - `repository_interface.go` - Repository interface
-  - `create.go` - Create method implementation
-  - `get_by_id.go` - Get by ID method implementation
-  - `get_by_email.go` - Get by email method implementation
-  - `update.go` - Update method implementation
-  - `delete.go` - Delete method implementation
-  - `list.go` - List method implementation
   - `count.go` - Count method implementation
-  - `test_suite.go` - Shared test suite setup with testcontainer
   - `*_test.go` - Individual test files for each method
+  - Individual service methods: `list.go`, `count.go`, etc.
 - **Service Package**: `feature/<feature_name>/service/`
   - `service.go` - Service implementation
   - `service_interface.go` - Service interface
@@ -49,23 +43,12 @@ project-root/
 │       │   ├── entity.go
 │       │   ├── repository.go
 │       │   ├── repository_interface.go
-│       │   ├── create.go
-│       │   ├── get_by_id.go
-│       │   ├── get_by_email.go
-│       │   ├── update.go
-│       │   ├── delete.go
-│       │   ├── list.go
-│       │   ├── count.go
-│       │   ├── test_suite.go
+│       │   ├── <method>.go
 │       │   └── *_test.go
 │       ├── service/     # Business logic layer
 │       │   ├── service.go
 │       │   ├── service_interface.go
-│       │   ├── create.go
-│       │   ├── get.go
-│       │   ├── update.go
-│       │   ├── delete.go
-│       │   ├── list.go
+│       │   ├── <method>.go
 │       │   └── *_dto.go
 │       └── handler/     # Presentation layer
 │           ├── http_handler.go      # Main HTTP handlers with Swagger docs
@@ -100,8 +83,6 @@ project-root/
 
 2. **Install dependencies**:
    ```bash
-   make deps
-   # or
    go mod download
    ```
 

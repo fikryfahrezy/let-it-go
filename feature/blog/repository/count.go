@@ -12,7 +12,7 @@ func (r *blogRepository) Count(ctx context.Context) (int, error) {
 	var count int
 	err := r.db.QueryRowContext(ctx, query).Scan(&count)
 	if err != nil {
-		slog.Error("Failed to count blogs",
+		r.log.Error("Failed to count blogs",
 			slog.String("error", err.Error()),
 		)
 		return 0, fmt.Errorf("%w: %w", ErrFailedToCountBlogs, err)
@@ -27,7 +27,7 @@ func (r *blogRepository) CountByStatus(ctx context.Context, status string) (int,
 	var count int
 	err := r.db.QueryRowContext(ctx, query, status).Scan(&count)
 	if err != nil {
-		slog.Error("Failed to count blogs by status",
+		r.log.Error("Failed to count blogs by status",
 			slog.String("error", err.Error()),
 			slog.String("status", status),
 		)

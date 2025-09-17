@@ -25,7 +25,7 @@ func NewDB(config Config) (*DB, error) {
 
 	db, err := sql.Open("mysql", config.DSN)
 	if err != nil {
-		slog.Error("Failed to open database connection", 
+		slog.Error("Failed to open database connection",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
@@ -36,7 +36,7 @@ func NewDB(config Config) (*DB, error) {
 	db.SetConnMaxLifetime(5 * time.Minute)
 
 	if err := db.Ping(); err != nil {
-		slog.Error("Failed to ping database", 
+		slog.Error("Failed to ping database",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("failed to ping database: %w", err)

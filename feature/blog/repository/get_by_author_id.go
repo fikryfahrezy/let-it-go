@@ -19,7 +19,7 @@ func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID, 
 
 	rows, err := r.db.QueryContext(ctx, query, authorID, limit, offset)
 	if err != nil {
-		slog.Error("Failed to get blogs by author ID",
+		r.log.Error("Failed to get blogs by author ID",
 			slog.String("error", err.Error()),
 			slog.String("author_id", authorID.String()),
 		)
@@ -41,7 +41,7 @@ func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID, 
 			&blog.UpdatedAt,
 		)
 		if err != nil {
-			slog.Error("Failed to scan blog row",
+			r.log.Error("Failed to scan blog row",
 				slog.String("error", err.Error()),
 			)
 			return nil, fmt.Errorf("%w: %w", ErrFailedToScanBlogRow, err)
@@ -50,7 +50,7 @@ func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID, 
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("Error iterating blog rows",
+		r.log.Error("Error iterating blog rows",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)

@@ -1,60 +1,66 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
-func (suite *BlogRepositoryTestSuite) TestList() {
+func TestList(t *testing.T) {
+	authorID := setupTest(t)
+
 	// Create test blogs
-	blogs := []Blog{
+	blogs := []repository.Blog{
 		{
 			Title:    "Blog 1",
 			Content:  "Content 1",
-			AuthorID: suite.authorID,
-			Status:   StatusDraft,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 		{
 			Title:    "Blog 2",
 			Content:  "Content 2",
-			AuthorID: suite.authorID,
-			Status:   StatusPublished,
+			AuthorID: authorID,
+			Status:   repository.StatusPublished,
 		},
 		{
 			Title:    "Blog 3",
 			Content:  "Content 3",
-			AuthorID: suite.authorID,
-			Status:   StatusArchived,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 	}
 
 	for _, blog := range blogs {
-		err := suite.repository.Create(suite.ctx, blog)
-		require.NoError(suite.T(), err)
+		err := testRepository.Create(context.Background(), blog)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	// Test pagination
-	result, err := suite.repository.List(suite.ctx, 2, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 2)
-
-	result, err = suite.repository.List(suite.ctx, 2, 1)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 2)
-
-	result, err = suite.repository.List(suite.ctx, 10, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 3)
-}
-
-func TestBlogListTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+	result, err := testRepository.List(context.Background(), 2, 0)
+	if err != nil {
+		t.Fatal(err)
 	}
-	
-	suite.Run(t, new(BlogRepositoryTestSuite))
+	if len(result) != 2 {
+		t.Errorf("Expected 2 blogs, got %d", len(result))
+	}
+
+	result, err = testRepository.List(context.Background(), 2, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 2 {
+		t.Errorf("Expected 2 blogs, got %d", len(result))
+	}
+
+	result, err = testRepository.List(context.Background(), 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 3 {
+		t.Errorf("Expected 3 blogs, got %d", len(result))
+	}
 }

@@ -1,41 +1,48 @@
-package service
+package service_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
+	"github.com/fikryfahrezy/let-it-go/feature/user/repository/repositoryfakes"
+	"github.com/fikryfahrezy/let-it-go/feature/user/service"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserService_DeleteUser_Success(t *testing.T) {
-	suite := SetupUserServiceTest()
+	mockRepo := &repositoryfakes.FakeUserRepository{}
+	userService := service.NewUserService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	userID := uuid.New()
-	suite.mockRepo.DeleteReturns(nil)
+	mockRepo.DeleteReturns(nil)
 
-	err := suite.userService.DeleteUser(suite.ctx, userID)
+	err := userService.DeleteUser(ctx, userID)
 
 	assert.NoError(t, err)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.DeleteCallCount())
-	_, actualID := suite.mockRepo.DeleteArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.DeleteCallCount())
+	_, actualID := mockRepo.DeleteArgsForCall(0)
 	assert.Equal(t, userID, actualID)
 }
 
 func TestUserService_DeleteUser_NotFound(t *testing.T) {
-	suite := SetupUserServiceTest()
+	mockRepo := &repositoryfakes.FakeUserRepository{}
+	userService := service.NewUserService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	userID := uuid.New()
-	suite.mockRepo.DeleteReturns(repository.ErrUserNotFound)
+	mockRepo.DeleteReturns(repository.ErrUserNotFound)
 
-	err := suite.userService.DeleteUser(suite.ctx, userID)
+	err := userService.DeleteUser(ctx, userID)
 
 	assert.Error(t, err)
 	assert.Equal(t, repository.ErrUserNotFound, err)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.DeleteCallCount())
+	assert.Equal(t, 1, mockRepo.DeleteCallCount())
 }
-

@@ -16,7 +16,7 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]User, e
 
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
-		slog.Error("Failed to list users",
+		r.log.Error("Failed to list users",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToListUsers, err)
@@ -35,7 +35,7 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]User, e
 			&user.UpdatedAt,
 		)
 		if err != nil {
-			slog.Error("Failed to scan user row",
+			r.log.Error("Failed to scan user row",
 				slog.String("error", err.Error()),
 			)
 			return nil, fmt.Errorf("%w: %w", ErrFailedToScanUserRow, err)
@@ -44,7 +44,7 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]User, e
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("Error iterating user rows",
+		r.log.Error("Error iterating user rows",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)

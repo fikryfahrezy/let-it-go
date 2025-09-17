@@ -24,8 +24,8 @@ import (
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
 	"github.com/fikryfahrezy/let-it-go/feature/user/service"
 	"github.com/fikryfahrezy/let-it-go/pkg/database"
-	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	server "github.com/fikryfahrezy/let-it-go/pkg/http_server"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 )
 
 var (
@@ -62,15 +62,15 @@ func main() {
 	}
 
 	// Initialize feature dependencies
-	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
-	userHandlerInstance := userHandler.NewUserHandler(userService)
-	
+	userRepo := repository.NewUserRepository(log, db)
+	userService := service.NewUserService(log, userRepo)
+	userHandlerInstance := userHandler.NewUserHandler(log, userService)
+
 	// Initialize blog dependencies
-	blogRepo := blogRepository.NewBlogRepository(db)
-	blogServiceInstance := blogService.NewBlogService(blogRepo)
-	blogHandlerInstance := blogHandler.NewBlogHandler(blogServiceInstance)
-	
+	blogRepo := blogRepository.NewBlogRepository(log, db)
+	blogServiceInstance := blogService.NewBlogService(log, blogRepo)
+	blogHandlerInstance := blogHandler.NewBlogHandler(log, blogServiceInstance)
+
 	// Initialize health handler
 	healthHandlerInstance := healthHandler.NewHealthHandler(db, version, commit, buildTime)
 

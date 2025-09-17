@@ -40,15 +40,15 @@ func (s *Server) Initialize(handlers []RouteHandler) error {
 
 	// Initialize Echo server
 	e := echo.New()
-	
+
 	// Set custom validator
 	e.Validator = NewCustomValidator()
-	
+
 	// Configure middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-	
+
 	// Request logging with slog
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
@@ -64,7 +64,6 @@ func (s *Server) Initialize(handlers []RouteHandler) error {
 		},
 	}))
 
-
 	// Setup API routes
 	s.setupAPIRoutes(e, handlers)
 
@@ -76,14 +75,14 @@ func (s *Server) Initialize(handlers []RouteHandler) error {
 func (s *Server) setupAPIRoutes(e *echo.Echo, handlers []RouteHandler) {
 	// Swagger documentation - accessible at /swagger/index.html
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	
+
 	// Redirect /swagger to /swagger/index.html for convenience
 	e.GET("/swagger", func(c echo.Context) error {
 		return c.Redirect(302, "/swagger/index.html")
 	})
-	
+
 	api := e.Group("/api")
-	
+
 	// Let each feature register its own routes
 	for _, handler := range handlers {
 		handler.SetupRoutes(api)

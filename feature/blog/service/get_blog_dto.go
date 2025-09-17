@@ -3,8 +3,8 @@ package service
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
+	"github.com/google/uuid"
 )
 
 type GetBlogResponse struct {

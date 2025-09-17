@@ -27,12 +27,11 @@ func (r *blogRepository) GetByID(ctx context.Context, id uuid.UUID) (Blog, error
 		&blog.CreatedAt,
 		&blog.UpdatedAt,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return Blog{}, ErrBlogNotFound
 		}
-		slog.Error("Failed to get blog by ID",
+		r.log.Error("Failed to get blog by ID",
 			slog.String("error", err.Error()),
 			slog.String("blog_id", id.String()),
 		)

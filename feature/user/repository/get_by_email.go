@@ -23,12 +23,11 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (User, er
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return User{}, ErrUserNotFound
 		}
-		slog.Error("Failed to get user by email",
+		r.log.Error("Failed to get user by email",
 			slog.String("error", err.Error()),
 			slog.String("email", email),
 		)

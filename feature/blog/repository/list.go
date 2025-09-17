@@ -16,7 +16,7 @@ func (r *blogRepository) List(ctx context.Context, limit, offset int) ([]Blog, e
 
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
-		slog.Error("Failed to list blogs",
+		r.log.Error("Failed to list blogs",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToListBlogs, err)
@@ -37,7 +37,7 @@ func (r *blogRepository) List(ctx context.Context, limit, offset int) ([]Blog, e
 			&blog.UpdatedAt,
 		)
 		if err != nil {
-			slog.Error("Failed to scan blog row",
+			r.log.Error("Failed to scan blog row",
 				slog.String("error", err.Error()),
 			)
 			return nil, fmt.Errorf("%w: %w", ErrFailedToScanBlogRow, err)
@@ -46,7 +46,7 @@ func (r *blogRepository) List(ctx context.Context, limit, offset int) ([]Blog, e
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("Error iterating blog rows",
+		r.log.Error("Error iterating blog rows",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)

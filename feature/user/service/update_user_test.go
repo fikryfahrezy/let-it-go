@@ -1,16 +1,22 @@
-package service
+package service_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
+	"github.com/fikryfahrezy/let-it-go/feature/user/repository/repositoryfakes"
+	"github.com/fikryfahrezy/let-it-go/feature/user/service"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserService_UpdateUser_Success(t *testing.T) {
-	suite := SetupUserServiceTest()
+	mockRepo := &repositoryfakes.FakeUserRepository{}
+	userService := service.NewUserService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	userID := uuid.New()
 	existingUser := repository.User{
@@ -22,15 +28,15 @@ func TestUserService_UpdateUser_Success(t *testing.T) {
 		UpdatedAt: time.Now().Add(-24 * time.Hour),
 	}
 
-	suite.mockRepo.GetByIDReturns(existingUser, nil)
-	suite.mockRepo.UpdateReturns(nil)
+	mockRepo.GetByIDReturns(existingUser, nil)
+	mockRepo.UpdateReturns(nil)
 
-	req := UpdateUserRequest{
+	req := service.UpdateUserRequest{
 		Name:  "New Name",
 		Email: "new@example.com",
 	}
 
-	result, err := suite.userService.UpdateUser(suite.ctx, userID, req)
+	result, err := userService.UpdateUser(ctx, userID, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, userID, result.ID)
@@ -39,32 +45,33 @@ func TestUserService_UpdateUser_Success(t *testing.T) {
 	assert.Equal(t, existingUser.CreatedAt, result.CreatedAt)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.GetByIDCallCount())
-	assert.Equal(t, 1, suite.mockRepo.UpdateCallCount())
-	_, actualUser := suite.mockRepo.UpdateArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.GetByIDCallCount())
+	assert.Equal(t, 1, mockRepo.UpdateCallCount())
+	_, actualUser := mockRepo.UpdateArgsForCall(0)
 	assert.Equal(t, req.Name, actualUser.Name)
 	assert.Equal(t, req.Email, actualUser.Email)
 }
 
 func TestUserService_UpdateUser_NotFound(t *testing.T) {
-	suite := SetupUserServiceTest()
+	mockRepo := &repositoryfakes.FakeUserRepository{}
+	userService := service.NewUserService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	userID := uuid.New()
-	suite.mockRepo.GetByIDReturns(repository.User{}, repository.ErrUserNotFound)
+	mockRepo.GetByIDReturns(repository.User{}, repository.ErrUserNotFound)
 
-	req := UpdateUserRequest{
+	req := service.UpdateUserRequest{
 		Name:  "New Name",
 		Email: "new@example.com",
 	}
 
-	result, err := suite.userService.UpdateUser(suite.ctx, userID, req)
+	result, err := userService.UpdateUser(ctx, userID, req)
 
 	assert.Error(t, err)
 	assert.Equal(t, repository.ErrUserNotFound, err)
-	assert.Equal(t, UpdateUserResponse{}, result)
+	assert.Equal(t, service.UpdateUserResponse{}, result)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.GetByIDCallCount())
-	assert.Equal(t, 0, suite.mockRepo.UpdateCallCount()) // Update should not be called
+	assert.Equal(t, 1, mockRepo.GetByIDCallCount())
+	assert.Equal(t, 0, mockRepo.UpdateCallCount()) // Update should not be called
 }
-

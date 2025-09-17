@@ -1,71 +1,77 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
-func (suite *BlogRepositoryTestSuite) TestGetByAuthorID() {
+func TestGetByAuthorID(t *testing.T) {
+	authorID := setupTest(t)
+
 	// Create another author
 	author2ID := uuid.New()
-	_, err := suite.db.Exec("INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)",
-		author2ID, "Author 2", "author2@example.com", "password")
-	require.NoError(suite.T(), err)
+	_, err := db.Exec("INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)",
+		author2ID, "Test Author 2", "author2@example.com", "password")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Create blogs for different authors
-	blogsAuthor1 := []Blog{
+	// Create test blogs
+	blogs := []repository.Blog{
 		{
 			Title:    "Author 1 Blog 1",
 			Content:  "Content 1",
-			AuthorID: suite.authorID,
-			Status:   StatusDraft,
+			AuthorID: authorID,
+			Status:   repository.StatusDraft,
 		},
 		{
 			Title:    "Author 1 Blog 2",
 			Content:  "Content 2",
-			AuthorID: suite.authorID,
-			Status:   StatusPublished,
+			AuthorID: authorID,
+			Status:   repository.StatusPublished,
 		},
-	}
-
-	blogsAuthor2 := []Blog{
 		{
 			Title:    "Author 2 Blog 1",
 			Content:  "Content 3",
 			AuthorID: author2ID,
-			Status:   StatusDraft,
+			Status:   repository.StatusDraft,
 		},
 	}
 
-	for _, blog := range append(blogsAuthor1, blogsAuthor2...) {
-		err := suite.repository.Create(suite.ctx, blog)
-		require.NoError(suite.T(), err)
+	for _, blog := range blogs {
+		err := testRepository.Create(context.Background(), blog)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
-	// Test get blogs by author
-	result, err := suite.repository.GetByAuthorID(suite.ctx, suite.authorID, 10, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 2)
+	// Test get by author 1
+	result, err := testRepository.GetByAuthorID(context.Background(), authorID, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 2 {
+		t.Errorf("Expected 2 blogs for author 1, got %d", len(result))
+	}
 
-	result, err = suite.repository.GetByAuthorID(suite.ctx, author2ID, 10, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 1)
+	// Test get by author 2
+	result, err = testRepository.GetByAuthorID(context.Background(), author2ID, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		t.Errorf("Expected 1 blog for author 2, got %d", len(result))
+	}
 
 	// Test pagination
-	result, err = suite.repository.GetByAuthorID(suite.ctx, suite.authorID, 1, 0)
-	assert.NoError(suite.T(), err)
-	assert.Len(suite.T(), result, 1)
-}
-
-func TestBlogGetByAuthorIDTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+	result, err = testRepository.GetByAuthorID(context.Background(), authorID, 1, 0)
+	if err != nil {
+		t.Fatal(err)
 	}
-	
-	suite.Run(t, new(BlogRepositoryTestSuite))
+	if len(result) != 1 {
+		t.Errorf("Expected 1 blog with pagination, got %d", len(result))
+	}
 }

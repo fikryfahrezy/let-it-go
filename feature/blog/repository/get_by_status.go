@@ -17,7 +17,7 @@ func (r *blogRepository) GetByStatus(ctx context.Context, status string, limit, 
 
 	rows, err := r.db.QueryContext(ctx, query, status, limit, offset)
 	if err != nil {
-		slog.Error("Failed to get blogs by status",
+		r.log.Error("Failed to get blogs by status",
 			slog.String("error", err.Error()),
 			slog.String("status", status),
 		)
@@ -39,7 +39,7 @@ func (r *blogRepository) GetByStatus(ctx context.Context, status string, limit, 
 			&blog.UpdatedAt,
 		)
 		if err != nil {
-			slog.Error("Failed to scan blog row",
+			r.log.Error("Failed to scan blog row",
 				slog.String("error", err.Error()),
 			)
 			return nil, fmt.Errorf("%w: %w", ErrFailedToScanBlogRow, err)
@@ -48,7 +48,7 @@ func (r *blogRepository) GetByStatus(ctx context.Context, status string, limit, 
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("Error iterating blog rows",
+		r.log.Error("Error iterating blog rows",
 			slog.String("error", err.Error()),
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)

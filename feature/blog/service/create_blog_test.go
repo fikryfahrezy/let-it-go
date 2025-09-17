@@ -1,42 +1,48 @@
-package service
+package service_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository/repositoryfakes"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/service"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBlogService_CreateBlog_Success(t *testing.T) {
-	suite := SetupBlogServiceTest()
+	mockRepo := &repositoryfakes.FakeBlogRepository{}
+	blogService := service.NewBlogService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
-	suite.mockRepo.CreateReturns(nil)
+	mockRepo.CreateReturns(nil)
 
 	authorID := uuid.New()
-	req := CreateBlogRequest{
+	req := service.CreateBlogRequest{
 		Title:    "Test Blog",
 		Content:  "This is a test blog content",
 		AuthorID: authorID,
 		Status:   "draft",
 	}
 
-	result, err := suite.blogService.CreateBlog(suite.ctx, req)
+	result, err := blogService.CreateBlog(ctx, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, req.Title, result.Title)
 	assert.Equal(t, req.Content, result.Content)
 	assert.Equal(t, req.AuthorID, result.AuthorID)
 	assert.Equal(t, req.Status, result.Status)
-	// Note: Current service implementation has a design issue - ID and timestamps 
+	// Note: Current service implementation has a design issue - ID and timestamps
 	// are not populated in the response because the repository modifies a copy of the struct
 	assert.Equal(t, uuid.Nil, result.ID) // This shows the current bug
-	assert.Zero(t, result.CreatedAt)     // This shows the current bug  
+	assert.Zero(t, result.CreatedAt)     // This shows the current bug
 	assert.Zero(t, result.UpdatedAt)     // This shows the current bug
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.CreateCallCount())
-	_, actualBlog := suite.mockRepo.CreateArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.CreateCallCount())
+	_, actualBlog := mockRepo.CreateArgsForCall(0)
 	assert.Equal(t, req.Title, actualBlog.Title)
 	assert.Equal(t, req.Content, actualBlog.Content)
 	assert.Equal(t, req.AuthorID, actualBlog.AuthorID)
@@ -44,19 +50,21 @@ func TestBlogService_CreateBlog_Success(t *testing.T) {
 }
 
 func TestBlogService_CreateBlog_DefaultToDraft(t *testing.T) {
-	suite := SetupBlogServiceTest()
+	mockRepo := &repositoryfakes.FakeBlogRepository{}
+	blogService := service.NewBlogService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
-	suite.mockRepo.CreateReturns(nil)
+	mockRepo.CreateReturns(nil)
 
 	authorID := uuid.New()
-	req := CreateBlogRequest{
+	req := service.CreateBlogRequest{
 		Title:    "Test Blog",
 		Content:  "This is a test blog content",
 		AuthorID: authorID,
 		Status:   "", // Empty status should default to draft
 	}
 
-	result, err := suite.blogService.CreateBlog(suite.ctx, req)
+	result, err := blogService.CreateBlog(ctx, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "draft", result.Status)
@@ -64,25 +72,27 @@ func TestBlogService_CreateBlog_DefaultToDraft(t *testing.T) {
 	assert.Zero(t, result.CreatedAt)     // Current bug in service
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.CreateCallCount())
-	_, actualBlog := suite.mockRepo.CreateArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.CreateCallCount())
+	_, actualBlog := mockRepo.CreateArgsForCall(0)
 	assert.Equal(t, "draft", actualBlog.Status)
 }
 
 func TestBlogService_CreateBlog_PublishedStatus(t *testing.T) {
-	suite := SetupBlogServiceTest()
+	mockRepo := &repositoryfakes.FakeBlogRepository{}
+	blogService := service.NewBlogService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
-	suite.mockRepo.CreateReturns(nil)
+	mockRepo.CreateReturns(nil)
 
 	authorID := uuid.New()
-	req := CreateBlogRequest{
+	req := service.CreateBlogRequest{
 		Title:    "Test Blog",
 		Content:  "This is a test blog content",
 		AuthorID: authorID,
 		Status:   "published",
 	}
 
-	result, err := suite.blogService.CreateBlog(suite.ctx, req)
+	result, err := blogService.CreateBlog(ctx, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "published", result.Status)
@@ -91,33 +101,34 @@ func TestBlogService_CreateBlog_PublishedStatus(t *testing.T) {
 	assert.Zero(t, result.CreatedAt)     // Current bug in service
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.CreateCallCount())
-	_, actualBlog := suite.mockRepo.CreateArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.CreateCallCount())
+	_, actualBlog := mockRepo.CreateArgsForCall(0)
 	assert.Equal(t, "published", actualBlog.Status)
 	assert.NotNil(t, actualBlog.PublishedAt)
 }
 
 func TestBlogService_CreateBlog_CreateError(t *testing.T) {
-	suite := SetupBlogServiceTest()
+	mockRepo := &repositoryfakes.FakeBlogRepository{}
+	blogService := service.NewBlogService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	createError := errors.New("failed to insert blog")
-	suite.mockRepo.CreateReturns(createError)
+	mockRepo.CreateReturns(createError)
 
 	authorID := uuid.New()
-	req := CreateBlogRequest{
+	req := service.CreateBlogRequest{
 		Title:    "Test Blog",
 		Content:  "This is a test blog content",
 		AuthorID: authorID,
 		Status:   "draft",
 	}
 
-	result, err := suite.blogService.CreateBlog(suite.ctx, req)
+	result, err := blogService.CreateBlog(ctx, req)
 
 	assert.Error(t, err)
 	assert.Equal(t, createError, err)
-	assert.Equal(t, GetBlogResponse{}, result)
+	assert.Equal(t, service.GetBlogResponse{}, result)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.CreateCallCount())
+	assert.Equal(t, 1, mockRepo.CreateCallCount())
 }
-

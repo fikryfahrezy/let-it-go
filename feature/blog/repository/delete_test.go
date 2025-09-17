@@ -1,49 +1,57 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
-func (suite *BlogRepositoryTestSuite) TestDelete() {
-	blog := Blog{
+func TestDelete(t *testing.T) {
+	authorID := setupTest(t)
+
+	blog := repository.Blog{
 		Title:    "Test Blog",
 		Content:  "This is a test blog content",
-		AuthorID: suite.authorID,
-		Status:   StatusDraft,
+		AuthorID: authorID,
+		Status:   repository.StatusDraft,
 	}
 
-	err := suite.repository.Create(suite.ctx, blog)
-	require.NoError(suite.T(), err)
+	err := testRepository.Create(context.Background(), blog)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	createdBlog, err := suite.getBlogByTitle(blog.Title)
-	require.NoError(suite.T(), err)
+	createdBlog, err := getBlogByTitle(blog.Title)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	err = suite.repository.Delete(suite.ctx, createdBlog.ID)
-	assert.NoError(suite.T(), err)
+	err = testRepository.Delete(context.Background(), createdBlog.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Verify deletion
-	_, err = suite.repository.GetByID(suite.ctx, createdBlog.ID)
-	assert.Error(suite.T(), err)
-	assert.Equal(suite.T(), ErrBlogNotFound, err)
-}
-
-func (suite *BlogRepositoryTestSuite) TestDeleteNotFound() {
-	randomID := uuid.New()
-	err := suite.repository.Delete(suite.ctx, randomID)
-	assert.Error(suite.T(), err)
-	assert.Equal(suite.T(), ErrBlogNotFound, err)
-}
-
-func TestBlogDeleteTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
+	_, err = testRepository.GetByID(context.Background(), createdBlog.ID)
+	if err == nil {
+		t.Error("Expected error, got nil")
 	}
-	
-	suite.Run(t, new(BlogRepositoryTestSuite))
+	if err != repository.ErrBlogNotFound {
+		t.Errorf("Expected ErrBlogNotFound, got %v", err)
+	}
+}
+
+func TestDeleteNotFound(t *testing.T) {
+	setupTest(t)
+
+	randomID := uuid.New()
+	err := testRepository.Delete(context.Background(), randomID)
+	if err == nil {
+		t.Error("Expected error, got nil")
+	}
+	if err != repository.ErrBlogNotFound {
+		t.Errorf("Expected ErrBlogNotFound, got %v", err)
+	}
 }

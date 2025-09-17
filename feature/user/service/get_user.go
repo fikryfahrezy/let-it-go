@@ -8,7 +8,7 @@ import (
 )
 
 func (s *userService) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserResponse, error) {
-	slog.Info("Getting user by ID",
+	s.log.Info("Getting user by ID",
 		slog.String("user_id", id.String()),
 	)
 

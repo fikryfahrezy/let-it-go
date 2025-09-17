@@ -13,6 +13,7 @@ import (
 	"github.com/fikryfahrezy/let-it-go/feature/blog/service"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/service/servicefakes"
 	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -40,7 +41,7 @@ func TestBlogHandler_CreateBlog_Success(t *testing.T) {
 	}
 	mockService.CreateBlogReturns(expectedResponse, nil)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	requestBody := service.CreateBlogRequest{
@@ -72,7 +73,7 @@ func TestBlogHandler_CreateBlog_Success(t *testing.T) {
 
 func TestBlogHandler_CreateBlog_ValidationError(t *testing.T) {
 	mockService := &servicefakes.FakeBlogService{}
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	// Missing required fields
@@ -99,7 +100,7 @@ func TestBlogHandler_CreateBlog_ValidationError(t *testing.T) {
 
 func TestBlogHandler_CreateBlog_InvalidStatus(t *testing.T) {
 	mockService := &servicefakes.FakeBlogService{}
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	authorID := uuid.New()
@@ -140,7 +141,7 @@ func TestBlogHandler_GetBlog_Success(t *testing.T) {
 	}
 	mockService.GetBlogByIDReturns(expectedResponse, nil)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/blogs/"+blogID.String(), nil)
@@ -162,7 +163,7 @@ func TestBlogHandler_GetBlog_Success(t *testing.T) {
 
 func TestBlogHandler_GetBlog_InvalidUUID(t *testing.T) {
 	mockService := &servicefakes.FakeBlogService{}
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/blogs/invalid-uuid", nil)
@@ -185,7 +186,7 @@ func TestBlogHandler_GetBlog_NotFound(t *testing.T) {
 	blogID := uuid.New()
 	mockService.GetBlogByIDReturns(service.GetBlogResponse{}, repository.ErrBlogNotFound)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/blogs/"+blogID.String(), nil)
@@ -228,7 +229,7 @@ func TestBlogHandler_ListBlogs_Success(t *testing.T) {
 	}
 	mockService.ListBlogsReturns(expectedBlogs, 2, nil)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/blogs", nil)
@@ -262,7 +263,7 @@ func TestBlogHandler_ListBlogs_WithPagination(t *testing.T) {
 	}
 	mockService.ListBlogsReturns(expectedBlogs, 1, nil)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/blogs?page=2&page_size=5", nil)
@@ -285,7 +286,7 @@ func TestBlogHandler_DeleteBlog_Success(t *testing.T) {
 	blogID := uuid.New()
 	mockService.DeleteBlogReturns(nil)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/v1/blogs/"+blogID.String(), nil)
@@ -310,7 +311,7 @@ func TestBlogHandler_DeleteBlog_NotFound(t *testing.T) {
 	blogID := uuid.New()
 	mockService.DeleteBlogReturns(repository.ErrBlogNotFound)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/v1/blogs/"+blogID.String(), nil)
@@ -353,7 +354,7 @@ func TestBlogHandler_GetBlogsByAuthor_Success(t *testing.T) {
 	}
 	mockService.GetBlogsByAuthorReturns(expectedBlogs, 2, nil)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/blogs/author/"+authorID.String(), nil)
@@ -399,7 +400,7 @@ func TestBlogHandler_GetBlogsByStatus_Success(t *testing.T) {
 	}
 	mockService.GetBlogsByStatusReturns(expectedBlogs, 2, nil)
 
-	blogHandler := handler.NewBlogHandler(mockService)
+	blogHandler := handler.NewBlogHandler(logger.NewDiscardLogger(), mockService)
 	e := setupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/blogs/status/published", nil)

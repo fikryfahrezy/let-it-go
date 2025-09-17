@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"log/slog"
 	"os"
 )
@@ -70,8 +71,9 @@ func ParseFormat(s string) Format {
 }
 
 type Config struct {
-	Level  Level
-	Format Format
+	Level         Level
+	Format        Format
+	DisableOutput bool // For tests - sends output to io.Discard
 }
 
 func NewLogger(config Config) *slog.Logger {
@@ -94,16 +96,31 @@ func NewLogger(config Config) *slog.Logger {
 		AddSource: true,
 	}
 
+	// Choose output destination
+	var output io.Writer = os.Stdout
+	if config.DisableOutput {
+		output = io.Discard
+	}
+
 	var handler slog.Handler
 	switch config.Format {
 	case FormatJSON:
-		handler = slog.NewJSONHandler(os.Stdout, opts)
+		handler = slog.NewJSONHandler(output, opts)
 	default:
-		handler = slog.NewTextHandler(os.Stdout, opts)
+		handler = slog.NewTextHandler(output, opts)
 	}
 
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 
 	return logger
+}
+
+// NewDiscardLogger creates a logger that discards all output for testing
+func NewDiscardLogger() *slog.Logger {
+	return NewLogger(Config{
+		Level:         LevelInfo,
+		Format:        FormatText,
+		DisableOutput: true,
+	})
 }

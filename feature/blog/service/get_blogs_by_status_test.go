@@ -1,17 +1,23 @@
-package service
+package service_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository/repositoryfakes"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/service"
 	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBlogService_GetBlogsByStatus_Success(t *testing.T) {
-	suite := SetupBlogServiceTest()
+	mockRepo := &repositoryfakes.FakeBlogRepository{}
+	blogService := service.NewBlogService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	status := "published"
 	expectedBlogs := []repository.Blog{
@@ -35,15 +41,15 @@ func TestBlogService_GetBlogsByStatus_Success(t *testing.T) {
 		},
 	}
 
-	suite.mockRepo.GetByStatusReturns(expectedBlogs, nil)
-	suite.mockRepo.CountByStatusReturns(2, nil)
+	mockRepo.GetByStatusReturns(expectedBlogs, nil)
+	mockRepo.CountByStatusReturns(2, nil)
 
 	paginationReq := http_server.PaginationRequest{
 		Page:     1,
 		PageSize: 10,
 	}
 
-	result, totalCount, err := suite.blogService.GetBlogsByStatus(suite.ctx, status, paginationReq)
+	result, totalCount, err := blogService.GetBlogsByStatus(ctx, status, paginationReq)
 
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
@@ -54,14 +60,13 @@ func TestBlogService_GetBlogsByStatus_Success(t *testing.T) {
 	assert.Equal(t, expectedBlogs[0].Status, result[0].Status)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.GetByStatusCallCount())
-	_, actualStatus, limit, offset := suite.mockRepo.GetByStatusArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.GetByStatusCallCount())
+	_, actualStatus, limit, offset := mockRepo.GetByStatusArgsForCall(0)
 	assert.Equal(t, status, actualStatus)
 	assert.Equal(t, 10, limit)
 	assert.Equal(t, 0, offset)
 
-	assert.Equal(t, 1, suite.mockRepo.CountByStatusCallCount())
-	_, actualStatusForCount := suite.mockRepo.CountByStatusArgsForCall(0)
+	assert.Equal(t, 1, mockRepo.CountByStatusCallCount())
+	_, actualStatusForCount := mockRepo.CountByStatusArgsForCall(0)
 	assert.Equal(t, status, actualStatusForCount)
 }
-

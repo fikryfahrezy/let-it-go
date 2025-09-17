@@ -8,7 +8,7 @@ import (
 )
 
 func (s *userService) DeleteUser(ctx context.Context, id uuid.UUID) error {
-	slog.Info("Deleting user",
+	s.log.Info("Deleting user",
 		slog.String("user_id", id.String()),
 	)
 
@@ -21,7 +21,7 @@ func (s *userService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	slog.Info("User deleted successfully",
+	s.log.Info("User deleted successfully",
 		slog.String("user_id", id.String()),
 	)
 

@@ -1,16 +1,22 @@
-package service
+package service_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository/repositoryfakes"
+	"github.com/fikryfahrezy/let-it-go/feature/blog/service"
+	"github.com/fikryfahrezy/let-it-go/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBlogService_UpdateBlog_Success(t *testing.T) {
-	suite := SetupBlogServiceTest()
+	mockRepo := &repositoryfakes.FakeBlogRepository{}
+	blogService := service.NewBlogService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	blogID := uuid.New()
 	authorID := uuid.New()
@@ -24,16 +30,16 @@ func TestBlogService_UpdateBlog_Success(t *testing.T) {
 		UpdatedAt: time.Now().Add(-24 * time.Hour),
 	}
 
-	suite.mockRepo.GetByIDReturns(existingBlog, nil)
-	suite.mockRepo.UpdateReturns(nil)
+	mockRepo.GetByIDReturns(existingBlog, nil)
+	mockRepo.UpdateReturns(nil)
 
-	req := UpdateBlogRequest{
+	req := service.UpdateBlogRequest{
 		Title:   "New Title",
 		Content: "New content",
 		Status:  "published",
 	}
 
-	result, err := suite.blogService.UpdateBlog(suite.ctx, blogID, req)
+	result, err := blogService.UpdateBlog(ctx, blogID, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, blogID, result.ID)
@@ -45,31 +51,32 @@ func TestBlogService_UpdateBlog_Success(t *testing.T) {
 	assert.Equal(t, existingBlog.CreatedAt, result.CreatedAt)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.GetByIDCallCount())
-	assert.Equal(t, 1, suite.mockRepo.UpdateCallCount())
+	assert.Equal(t, 1, mockRepo.GetByIDCallCount())
+	assert.Equal(t, 1, mockRepo.UpdateCallCount())
 	// The repository would receive the unmodified blog entity due to the design issue
 }
 
 func TestBlogService_UpdateBlog_NotFound(t *testing.T) {
-	suite := SetupBlogServiceTest()
+	mockRepo := &repositoryfakes.FakeBlogRepository{}
+	blogService := service.NewBlogService(logger.NewDiscardLogger(), mockRepo)
+	ctx := context.Background()
 
 	blogID := uuid.New()
-	suite.mockRepo.GetByIDReturns(repository.Blog{}, repository.ErrBlogNotFound)
+	mockRepo.GetByIDReturns(repository.Blog{}, repository.ErrBlogNotFound)
 
-	req := UpdateBlogRequest{
+	req := service.UpdateBlogRequest{
 		Title:   "New Title",
 		Content: "New content",
 		Status:  "published",
 	}
 
-	result, err := suite.blogService.UpdateBlog(suite.ctx, blogID, req)
+	result, err := blogService.UpdateBlog(ctx, blogID, req)
 
 	assert.Error(t, err)
 	assert.Equal(t, repository.ErrBlogNotFound, err)
-	assert.Equal(t, GetBlogResponse{}, result)
+	assert.Equal(t, service.GetBlogResponse{}, result)
 
 	// Verify repository calls
-	assert.Equal(t, 1, suite.mockRepo.GetByIDCallCount())
-	assert.Equal(t, 0, suite.mockRepo.UpdateCallCount()) // Update should not be called
+	assert.Equal(t, 1, mockRepo.GetByIDCallCount())
+	assert.Equal(t, 0, mockRepo.UpdateCallCount()) // Update should not be called
 }
-

@@ -1,59 +1,55 @@
-package repository
+package repository_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
+	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-func (suite *UserRepositoryTestSuite) TestUpdate() {
-	user := User{
+func TestUpdate(t *testing.T) {
+	setupTest(t)
+
+	user := repository.User{
 		Name:     "John Doe",
 		Email:    "john@example.com",
 		Password: "hashedpassword",
 	}
 
-	err := suite.repository.Create(suite.ctx, user)
-	require.NoError(suite.T(), err)
+	err := testRepository.Create(context.Background(), user)
+	require.NoError(t, err)
 
 	// Get the created user to get the actual ID
-	createdUser, err := suite.repository.GetByEmail(suite.ctx, user.Email)
-	require.NoError(suite.T(), err)
+	createdUser, err := testRepository.GetByEmail(context.Background(), user.Email)
+	require.NoError(t, err)
 
 	// Update user
 	createdUser.Name = "John Updated"
 	createdUser.Email = "john.updated@example.com"
-	err = suite.repository.Update(suite.ctx, createdUser)
-	assert.NoError(suite.T(), err)
+	err = testRepository.Update(context.Background(), createdUser)
+	assert.NoError(t, err)
 
 	// Verify update
-	result, err := suite.repository.GetByID(suite.ctx, createdUser.ID)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "John Updated", result.Name)
-	assert.Equal(suite.T(), "john.updated@example.com", result.Email)
+	result, err := testRepository.GetByID(context.Background(), createdUser.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, "John Updated", result.Name)
+	assert.Equal(t, "john.updated@example.com", result.Email)
 }
 
-func (suite *UserRepositoryTestSuite) TestUpdateNotFound() {
-	user := User{
+func TestUpdateNotFound(t *testing.T) {
+	setupTest(t)
+
+	user := repository.User{
 		ID:       uuid.New(),
 		Name:     "John Doe",
 		Email:    "john@example.com",
 		Password: "hashedpassword",
 	}
 
-	err := suite.repository.Update(suite.ctx, user)
-	assert.Error(suite.T(), err)
-	assert.Equal(suite.T(), ErrUserNotFound, err)
-}
-
-func TestUserUpdateTestSuite(t *testing.T) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		t.Skip("Skipping integration tests")
-	}
-	
-	suite.Run(t, new(UserRepositoryTestSuite))
+	err := testRepository.Update(context.Background(), user)
+	assert.Error(t, err)
+	assert.Equal(t, repository.ErrUserNotFound, err)
 }
