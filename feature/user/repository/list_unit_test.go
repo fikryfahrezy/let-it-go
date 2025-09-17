@@ -17,6 +17,7 @@ import (
 func TestListUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}
@@ -67,6 +68,7 @@ func TestListUnit(t *testing.T) {
 func TestListEmptyUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}

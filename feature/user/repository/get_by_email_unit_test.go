@@ -18,6 +18,7 @@ import (
 func TestGetByEmailUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}
@@ -56,6 +57,7 @@ func TestGetByEmailUnit(t *testing.T) {
 func TestGetByEmailNotFoundUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}

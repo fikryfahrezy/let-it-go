@@ -66,6 +66,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to database: %s", err)
 	}
 
+	// nolint:errcheck
 	defer func() {
 		if err := pool.Purge(resource); err != nil {
 			log.Fatalf("Could not purge resource: %s", err)
@@ -95,6 +96,7 @@ func runMigrations(dsn string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// nolint:errcheck
 	defer db.Close()
 
 	driver, err := mysql.WithInstance(db, &mysql.Config{})

@@ -17,6 +17,7 @@ import (
 func TestListBlogUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}
@@ -69,6 +70,7 @@ func TestListBlogUnit(t *testing.T) {
 func TestListBlogEmptyUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}

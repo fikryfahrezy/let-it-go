@@ -15,6 +15,7 @@ import (
 func TestCountUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}
@@ -39,6 +40,7 @@ func TestCountUnit(t *testing.T) {
 func TestCountZeroUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	// nolint:errcheck
 	defer sqlDB.Close()
 
 	db := &database.DB{DB: sqlDB}
