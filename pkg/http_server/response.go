@@ -1,17 +1,19 @@
-package handler
+package server
 
 import (
 	"net/http"
 
+	"github.com/fikryfahrezy/let-it-go/pkg/app_error"
 	"github.com/labstack/echo/v4"
 )
 
 // APIResponse represents a standard API response
 type APIResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
-	Error   string `json:"error,omitempty"`
+	Success   bool   `json:"success"`
+	Message   string `json:"message"`
+	Data      any    `json:"data,omitempty"`
+	Error     string `json:"error,omitempty"`
+	ErrorCode string `json:"error_code,omitempty"`
 }
 
 // ListAPIResponse represents a paginated API response
@@ -21,21 +23,11 @@ type ListAPIResponse struct {
 	Data       any    `json:"data,omitempty"`
 	Pagination any    `json:"pagination,omitempty"`
 	Error      string `json:"error,omitempty"`
+	ErrorCode  string `json:"error_code,omitempty"`
 }
-
-// SwaggerErrorResponse represents an error response for Swagger docs
-type SwaggerErrorResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Error   string `json:"error,omitempty"`
-}
-
-// Legacy aliases for backward compatibility
-type Response = APIResponse
-type ListResponse = ListAPIResponse
 
 func SuccessResponse(c echo.Context, message string, data any) error {
-	return c.JSON(http.StatusOK, Response{
+	return c.JSON(http.StatusOK, APIResponse{
 		Success: true,
 		Message: message,
 		Data:    data,
@@ -43,7 +35,7 @@ func SuccessResponse(c echo.Context, message string, data any) error {
 }
 
 func CreatedResponse(c echo.Context, message string, data any) error {
-	return c.JSON(http.StatusCreated, Response{
+	return c.JSON(http.StatusCreated, APIResponse{
 		Success: true,
 		Message: message,
 		Data:    data,
@@ -51,7 +43,7 @@ func CreatedResponse(c echo.Context, message string, data any) error {
 }
 
 func ListSuccessResponse(c echo.Context, message string, data any, pagination any) error {
-	return c.JSON(http.StatusOK, ListResponse{
+	return c.JSON(http.StatusOK, ListAPIResponse{
 		Success:    true,
 		Message:    message,
 		Data:       data,
@@ -61,14 +53,19 @@ func ListSuccessResponse(c echo.Context, message string, data any, pagination an
 
 func ErrorResponse(c echo.Context, statusCode int, message string, err error) error {
 	errorMsg := ""
+	errorCode := ""
+	
 	if err != nil {
 		errorMsg = err.Error()
+		// Extract error code if it's an AppError
+		errorCode = app_error.GetCode(err)
 	}
 
-	return c.JSON(statusCode, Response{
-		Success: false,
-		Message: message,
-		Error:   errorMsg,
+	return c.JSON(statusCode, APIResponse{
+		Success:   false,
+		Message:   message,
+		Error:     errorMsg,
+		ErrorCode: errorCode,
 	})
 }
 

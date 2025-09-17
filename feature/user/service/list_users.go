@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+
+	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
 )
 
 func (s *userService) ListUsers(ctx context.Context, page, pageSize int) ([]ListUsersResponse, PaginationResponse, error) {
@@ -27,7 +29,7 @@ func (s *userService) ListUsers(ctx context.Context, page, pageSize int) ([]List
 		slog.Error("Failed to list users",
 			slog.String("error", err.Error()),
 		)
-		return nil, PaginationResponse{}, fmt.Errorf("failed to list users: %w", err)
+		return nil, PaginationResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToListUsers, err)
 	}
 
 	total, err := s.userRepo.Count(ctx)
@@ -35,7 +37,7 @@ func (s *userService) ListUsers(ctx context.Context, page, pageSize int) ([]List
 		slog.Error("Failed to count users",
 			slog.String("error", err.Error()),
 		)
-		return nil, PaginationResponse{}, fmt.Errorf("failed to count users: %w", err)
+		return nil, PaginationResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToCountUsers, err)
 	}
 
 	var responses []ListUsersResponse

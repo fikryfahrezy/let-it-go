@@ -15,7 +15,7 @@ func (r *userRepository) Count(ctx context.Context) (int, error) {
 		slog.Error("Failed to count users",
 			slog.String("error", err.Error()),
 		)
-		return 0, fmt.Errorf("failed to count users: %w", err)
+		return 0, fmt.Errorf("%w: %w", ErrFailedToCountUsers, err)
 	}
 
 	return count, nil

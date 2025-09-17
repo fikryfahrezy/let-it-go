@@ -21,9 +21,9 @@ func (r *blogRepository) Update(ctx context.Context, blog Blog) error {
 	if err != nil {
 		slog.Error("Failed to update blog",
 			slog.String("error", err.Error()),
-			slog.Int("blog_id", blog.ID),
+			slog.String("blog_id", blog.ID.String()),
 		)
-		return fmt.Errorf("failed to update blog: %w", err)
+		return fmt.Errorf("%w: %w", ErrFailedToUpdateBlog, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -31,15 +31,15 @@ func (r *blogRepository) Update(ctx context.Context, blog Blog) error {
 		slog.Error("Failed to get rows affected",
 			slog.String("error", err.Error()),
 		)
-		return fmt.Errorf("failed to get rows affected: %w", err)
+		return fmt.Errorf("%w: %w", ErrFailedToGetRowsAffected, err)
 	}
 
 	if rowsAffected == 0 {
-		return fmt.Errorf("blog not found")
+		return ErrBlogNotFound
 	}
 
 	slog.Info("Blog updated successfully",
-		slog.Int("blog_id", blog.ID),
+		slog.String("blog_id", blog.ID.String()),
 	)
 
 	return nil

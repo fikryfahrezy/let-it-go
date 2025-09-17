@@ -116,9 +116,6 @@ This application includes interactive API documentation using Swagger/OpenAPI:
 
 5. **Setup database and run migrations**:
    ```bash
-   # Create database (if using MySQL)
-   make db-create
-   
    # Run migrations using custom migration tool
    make migrate-up
    

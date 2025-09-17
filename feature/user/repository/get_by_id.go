@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+
+	"github.com/google/uuid"
 )
 
-func (r *userRepository) GetByID(ctx context.Context, id int) (User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (User, error) {
 	query := `
 		SELECT id, name, email, password, created_at, updated_at
 		FROM users
@@ -26,13 +28,13 @@ func (r *userRepository) GetByID(ctx context.Context, id int) (User, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return User{}, fmt.Errorf("user not found")
+			return User{}, ErrUserNotFound
 		}
 		slog.Error("Failed to get user by ID",
 			slog.String("error", err.Error()),
-			slog.Int("user_id", id),
+			slog.String("user_id", id.String()),
 		)
-		return User{}, fmt.Errorf("failed to get user by ID: %w", err)
+		return User{}, fmt.Errorf("%w: %w", ErrFailedToGetUser, err)
 	}
 
 	return user, nil

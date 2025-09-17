@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
 func (s *blogService) ListBlogs(ctx context.Context, page, pageSize int) ([]GetBlogResponse, PaginationInfo, error) {
@@ -11,12 +13,12 @@ func (s *blogService) ListBlogs(ctx context.Context, page, pageSize int) ([]GetB
 
 	blogs, err := s.blogRepo.List(ctx, pageSize, offset)
 	if err != nil {
-		return nil, PaginationInfo{}, fmt.Errorf("failed to list blogs: %w", err)
+		return nil, PaginationInfo{}, fmt.Errorf("%w: %w", repository.ErrFailedToListBlogs, err)
 	}
 
 	totalItems, err := s.blogRepo.Count(ctx)
 	if err != nil {
-		return nil, PaginationInfo{}, fmt.Errorf("failed to count blogs: %w", err)
+		return nil, PaginationInfo{}, fmt.Errorf("%w: %w", repository.ErrFailedToCountBlogs, err)
 	}
 
 	pagination := PaginationInfo{

@@ -2,10 +2,12 @@ package repository
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        int       `db:"id"`
+	ID        uuid.UUID `db:"id"` // UUIDv7
 	Name      string    `db:"name"`
 	Email     string    `db:"email"`
 	Password  string    `db:"password"`

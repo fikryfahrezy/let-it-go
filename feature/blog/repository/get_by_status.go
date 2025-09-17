@@ -21,7 +21,7 @@ func (r *blogRepository) GetByStatus(ctx context.Context, status string, limit, 
 			slog.String("error", err.Error()),
 			slog.String("status", status),
 		)
-		return nil, fmt.Errorf("failed to get blogs by status: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToGetBlogsByStatus, err)
 	}
 	defer rows.Close()
 
@@ -42,7 +42,7 @@ func (r *blogRepository) GetByStatus(ctx context.Context, status string, limit, 
 			slog.Error("Failed to scan blog row",
 				slog.String("error", err.Error()),
 			)
-			return nil, fmt.Errorf("failed to scan blog row: %w", err)
+			return nil, fmt.Errorf("%w: %w", ErrFailedToScanBlogRow, err)
 		}
 		blogs = append(blogs, blog)
 	}
@@ -51,7 +51,7 @@ func (r *blogRepository) GetByStatus(ctx context.Context, status string, limit, 
 		slog.Error("Error iterating blog rows",
 			slog.String("error", err.Error()),
 		)
-		return nil, fmt.Errorf("error iterating blog rows: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)
 	}
 
 	return blogs, nil

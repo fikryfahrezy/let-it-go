@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+
+	"github.com/google/uuid"
 )
 
-func (r *blogRepository) GetByID(ctx context.Context, id int) (Blog, error) {
+func (r *blogRepository) GetByID(ctx context.Context, id uuid.UUID) (Blog, error) {
 	query := `
 		SELECT id, title, content, author_id, status, published_at, created_at, updated_at
 		FROM blogs
@@ -28,13 +30,13 @@ func (r *blogRepository) GetByID(ctx context.Context, id int) (Blog, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return Blog{}, fmt.Errorf("blog not found")
+			return Blog{}, ErrBlogNotFound
 		}
 		slog.Error("Failed to get blog by ID",
 			slog.String("error", err.Error()),
-			slog.Int("blog_id", id),
+			slog.String("blog_id", id.String()),
 		)
-		return Blog{}, fmt.Errorf("failed to get blog by ID: %w", err)
+		return Blog{}, fmt.Errorf("%w: %w", ErrFailedToGetBlog, err)
 	}
 
 	return blog, nil

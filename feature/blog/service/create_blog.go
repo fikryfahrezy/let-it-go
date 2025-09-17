@@ -15,7 +15,7 @@ func (s *blogService) CreateBlog(ctx context.Context, req CreateBlogRequest) (Ge
 	blog := req.ToEntity()
 
 	if err := s.blogRepo.Create(ctx, blog); err != nil {
-		return GetBlogResponse{}, fmt.Errorf("failed to create blog: %w", err)
+		return GetBlogResponse{}, fmt.Errorf("%w: %w", repository.ErrFailedToCreateBlog, err)
 	}
 
 	return BlogEntityToGetResponse(blog), nil

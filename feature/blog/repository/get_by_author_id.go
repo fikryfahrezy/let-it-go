@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+
+	"github.com/google/uuid"
 )
 
-func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID int, limit, offset int) ([]Blog, error) {
+func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID, limit, offset int) ([]Blog, error) {
 	query := `
 		SELECT id, title, content, author_id, status, published_at, created_at, updated_at
 		FROM blogs
@@ -19,9 +21,9 @@ func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID int, limit,
 	if err != nil {
 		slog.Error("Failed to get blogs by author ID",
 			slog.String("error", err.Error()),
-			slog.Int("author_id", authorID),
+			slog.String("author_id", authorID.String()),
 		)
-		return nil, fmt.Errorf("failed to get blogs by author ID: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToGetBlogsByAuthor, err)
 	}
 	defer rows.Close()
 
@@ -42,7 +44,7 @@ func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID int, limit,
 			slog.Error("Failed to scan blog row",
 				slog.String("error", err.Error()),
 			)
-			return nil, fmt.Errorf("failed to scan blog row: %w", err)
+			return nil, fmt.Errorf("%w: %w", ErrFailedToScanBlogRow, err)
 		}
 		blogs = append(blogs, blog)
 	}
@@ -51,7 +53,7 @@ func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID int, limit,
 		slog.Error("Error iterating blog rows",
 			slog.String("error", err.Error()),
 		)
-		return nil, fmt.Errorf("error iterating blog rows: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)
 	}
 
 	return blogs, nil

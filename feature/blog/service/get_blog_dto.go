@@ -3,14 +3,15 @@ package service
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
 type GetBlogResponse struct {
-	ID          int        `json:"id"`
+	ID          uuid.UUID  `json:"id"`
 	Title       string     `json:"title"`
 	Content     string     `json:"content"`
-	AuthorID    int        `json:"author_id"`
+	AuthorID    uuid.UUID  `json:"author_id"`
 	Status      string     `json:"status"`
 	PublishedAt *time.Time `json:"published_at,omitempty"`
 	CreatedAt   time.Time  `json:"created_at"`

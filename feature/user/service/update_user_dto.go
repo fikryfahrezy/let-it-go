@@ -3,6 +3,7 @@ package service
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/fikryfahrezy/let-it-go/feature/user/repository"
 )
 
@@ -12,7 +13,7 @@ type UpdateUserRequest struct {
 }
 
 type UpdateUserResponse struct {
-	ID        int       `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`

@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/service"
+	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,8 +31,8 @@ func NewBlogHandler(blogService service.BlogService) *BlogHandler {
 // @Produce json
 // @Param blog body service.CreateBlogRequest true "Blog creation request"
 // @Success 201 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs [post]
 func (h *BlogHandler) CreateBlog(c echo.Context) error {
 	var req service.CreateBlogRequest
@@ -37,14 +40,14 @@ func (h *BlogHandler) CreateBlog(c echo.Context) error {
 		slog.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
-		return BadRequestResponse(c, "Invalid request format", err)
+		return server.BadRequestResponse(c, "Invalid request format", err)
 	}
 
 	if err := h.validateCreateBlogRequest(req); err != nil {
 		slog.Warn("Invalid create blog request",
 			slog.String("error", err.Error()),
 		)
-		return BadRequestResponse(c, "Validation failed", err)
+		return server.BadRequestResponse(c, "Validation failed", err)
 	}
 
 	blog, err := h.blogService.CreateBlog(c.Request().Context(), req)
@@ -52,10 +55,10 @@ func (h *BlogHandler) CreateBlog(c echo.Context) error {
 		slog.Error("Failed to create blog",
 			slog.String("error", err.Error()),
 		)
-		return InternalServerErrorResponse(c, "Failed to create blog", err)
+		return server.InternalServerErrorResponse(c, "Failed to create blog", err)
 	}
 
-	return CreatedResponse(c, "Blog created successfully", blog)
+	return server.CreatedResponse(c, "Blog created successfully", blog)
 }
 
 // GetBlog retrieves a blog by ID
@@ -64,35 +67,35 @@ func (h *BlogHandler) CreateBlog(c echo.Context) error {
 // @Tags blogs
 // @Accept json
 // @Produce json
-// @Param id path int true "Blog ID"
+// @Param id path string true "Blog ID"
 // @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 404 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 404 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs/{id} [get]
 func (h *BlogHandler) GetBlog(c echo.Context) error {
 	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
+	id, err := uuid.Parse(idParam)
 	if err != nil {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return BadRequestResponse(c, "Invalid blog ID", err)
+		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	blog, err := h.blogService.GetBlogByID(c.Request().Context(), id)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return NotFoundResponse(c, "Blog not found", err)
+		if errors.Is(err, repository.ErrBlogNotFound) {
+			return server.NotFoundResponse(c, "Blog not found", err)
 		}
 		slog.Error("Failed to get blog",
 			slog.String("error", err.Error()),
-			slog.Int("blog_id", id),
+			slog.String("blog_id", id.String()),
 		)
-		return InternalServerErrorResponse(c, "Failed to get blog", err)
+		return server.InternalServerErrorResponse(c, "Failed to get blog", err)
 	}
 
-	return SuccessResponse(c, "Blog retrieved successfully", blog)
+	return server.SuccessResponse(c, "Blog retrieved successfully", blog)
 }
 
 // UpdateBlog updates an existing blog
@@ -101,21 +104,21 @@ func (h *BlogHandler) GetBlog(c echo.Context) error {
 // @Tags blogs
 // @Accept json
 // @Produce json
-// @Param id path int true "Blog ID"
+// @Param id path string true "Blog ID"
 // @Param blog body service.UpdateBlogRequest true "Blog update request"
 // @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 404 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 404 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs/{id} [put]
 func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
+	id, err := uuid.Parse(idParam)
 	if err != nil {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return BadRequestResponse(c, "Invalid blog ID", err)
+		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	var req service.UpdateBlogRequest
@@ -123,29 +126,29 @@ func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 		slog.Error("Failed to bind request",
 			slog.String("error", err.Error()),
 		)
-		return BadRequestResponse(c, "Invalid request format", err)
+		return server.BadRequestResponse(c, "Invalid request format", err)
 	}
 
 	if err := h.validateUpdateBlogRequest(req); err != nil {
 		slog.Warn("Invalid update blog request",
 			slog.String("error", err.Error()),
 		)
-		return BadRequestResponse(c, "Validation failed", err)
+		return server.BadRequestResponse(c, "Validation failed", err)
 	}
 
 	blog, err := h.blogService.UpdateBlog(c.Request().Context(), id, req)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return NotFoundResponse(c, "Blog not found", err)
+		if errors.Is(err, repository.ErrBlogNotFound) {
+			return server.NotFoundResponse(c, "Blog not found", err)
 		}
 		slog.Error("Failed to update blog",
 			slog.String("error", err.Error()),
-			slog.Int("blog_id", id),
+			slog.String("blog_id", id.String()),
 		)
-		return InternalServerErrorResponse(c, "Failed to update blog", err)
+		return server.InternalServerErrorResponse(c, "Failed to update blog", err)
 	}
 
-	return SuccessResponse(c, "Blog updated successfully", blog)
+	return server.SuccessResponse(c, "Blog updated successfully", blog)
 }
 
 // DeleteBlog deletes a blog by ID
@@ -154,35 +157,35 @@ func (h *BlogHandler) UpdateBlog(c echo.Context) error {
 // @Tags blogs
 // @Accept json
 // @Produce json
-// @Param id path int true "Blog ID"
+// @Param id path string true "Blog ID"
 // @Success 200 {object} APIResponse
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 404 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 404 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs/{id} [delete]
 func (h *BlogHandler) DeleteBlog(c echo.Context) error {
 	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
+	id, err := uuid.Parse(idParam)
 	if err != nil {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return BadRequestResponse(c, "Invalid blog ID", err)
+		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	err = h.blogService.DeleteBlog(c.Request().Context(), id)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return NotFoundResponse(c, "Blog not found", err)
+		if errors.Is(err, repository.ErrBlogNotFound) {
+			return server.NotFoundResponse(c, "Blog not found", err)
 		}
 		slog.Error("Failed to delete blog",
 			slog.String("error", err.Error()),
-			slog.Int("blog_id", id),
+			slog.String("blog_id", id.String()),
 		)
-		return InternalServerErrorResponse(c, "Failed to delete blog", err)
+		return server.InternalServerErrorResponse(c, "Failed to delete blog", err)
 	}
 
-	return SuccessResponse(c, "Blog deleted successfully", nil)
+	return server.SuccessResponse(c, "Blog deleted successfully", nil)
 }
 
 // ListBlogs retrieves a list of blogs with pagination
@@ -194,7 +197,7 @@ func (h *BlogHandler) DeleteBlog(c echo.Context) error {
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
 // @Success 200 {object} ListAPIResponse{data=[]service.GetBlogResponse}
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs [get]
 func (h *BlogHandler) ListBlogs(c echo.Context) error {
 	pageParam := c.QueryParam("page")
@@ -219,10 +222,10 @@ func (h *BlogHandler) ListBlogs(c echo.Context) error {
 		slog.Error("Failed to list blogs",
 			slog.String("error", err.Error()),
 		)
-		return InternalServerErrorResponse(c, "Failed to list blogs", err)
+		return server.InternalServerErrorResponse(c, "Failed to list blogs", err)
 	}
 
-	return ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
+	return server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
 }
 
 // GetBlogsByAuthor retrieves blogs by author ID with pagination
@@ -231,21 +234,21 @@ func (h *BlogHandler) ListBlogs(c echo.Context) error {
 // @Tags blogs
 // @Accept json
 // @Produce json
-// @Param author_id path int true "Author ID"
+// @Param author_id path string true "Author ID"
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
 // @Success 200 {object} ListAPIResponse{data=[]service.GetBlogResponse}
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs/author/{author_id} [get]
 func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 	authorIDParam := c.Param("author_id")
-	authorID, err := strconv.Atoi(authorIDParam)
+	authorID, err := uuid.Parse(authorIDParam)
 	if err != nil {
 		slog.Warn("Invalid author ID parameter",
 			slog.String("author_id", authorIDParam),
 		)
-		return BadRequestResponse(c, "Invalid author ID", err)
+		return server.BadRequestResponse(c, "Invalid author UUID format", err)
 	}
 
 	pageParam := c.QueryParam("page")
@@ -269,12 +272,12 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 	if err != nil {
 		slog.Error("Failed to get blogs by author",
 			slog.String("error", err.Error()),
-			slog.Int("author_id", authorID),
+			slog.String("author_id", authorID.String()),
 		)
-		return InternalServerErrorResponse(c, "Failed to get blogs by author", err)
+		return server.InternalServerErrorResponse(c, "Failed to get blogs by author", err)
 	}
 
-	return ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
+	return server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
 }
 
 // GetBlogsByStatus retrieves blogs by status with pagination
@@ -287,13 +290,13 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
 // @Success 200 {object} ListAPIResponse{data=[]service.GetBlogResponse}
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs/status/{status} [get]
 func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 	status := c.Param("status")
 	if status == "" {
-		return BadRequestResponse(c, "Status is required", nil)
+		return server.BadRequestResponse(c, "Status is required", nil)
 	}
 
 	pageParam := c.QueryParam("page")
@@ -319,10 +322,10 @@ func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 			slog.String("error", err.Error()),
 			slog.String("status", status),
 		)
-		return InternalServerErrorResponse(c, "Failed to get blogs by status", err)
+		return server.InternalServerErrorResponse(c, "Failed to get blogs by status", err)
 	}
 
-	return ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
+	return server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
 }
 
 // PublishBlog publishes a blog by ID
@@ -331,35 +334,35 @@ func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 // @Tags blogs
 // @Accept json
 // @Produce json
-// @Param id path int true "Blog ID"
+// @Param id path string true "Blog ID"
 // @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 404 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 404 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs/{id}/publish [post]
 func (h *BlogHandler) PublishBlog(c echo.Context) error {
 	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
+	id, err := uuid.Parse(idParam)
 	if err != nil {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return BadRequestResponse(c, "Invalid blog ID", err)
+		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	blog, err := h.blogService.PublishBlog(c.Request().Context(), id)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return NotFoundResponse(c, "Blog not found", err)
+		if errors.Is(err, repository.ErrBlogNotFound) {
+			return server.NotFoundResponse(c, "Blog not found", err)
 		}
 		slog.Error("Failed to publish blog",
 			slog.String("error", err.Error()),
-			slog.Int("blog_id", id),
+			slog.String("blog_id", id.String()),
 		)
-		return InternalServerErrorResponse(c, "Failed to publish blog", err)
+		return server.InternalServerErrorResponse(c, "Failed to publish blog", err)
 	}
 
-	return SuccessResponse(c, "Blog published successfully", blog)
+	return server.SuccessResponse(c, "Blog published successfully", blog)
 }
 
 // ArchiveBlog archives a blog by ID
@@ -368,35 +371,35 @@ func (h *BlogHandler) PublishBlog(c echo.Context) error {
 // @Tags blogs
 // @Accept json
 // @Produce json
-// @Param id path int true "Blog ID"
+// @Param id path string true "Blog ID"
 // @Success 200 {object} APIResponse{data=service.GetBlogResponse}
-// @Failure 400 {object} SwaggerErrorResponse
-// @Failure 404 {object} SwaggerErrorResponse
-// @Failure 500 {object} SwaggerErrorResponse
+// @Failure 400 {object} APIResponse
+// @Failure 404 {object} APIResponse
+// @Failure 500 {object} APIResponse
 // @Router /v1/blogs/{id}/archive [post]
 func (h *BlogHandler) ArchiveBlog(c echo.Context) error {
 	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
+	id, err := uuid.Parse(idParam)
 	if err != nil {
 		slog.Warn("Invalid blog ID parameter",
 			slog.String("id", idParam),
 		)
-		return BadRequestResponse(c, "Invalid blog ID", err)
+		return server.BadRequestResponse(c, "Invalid blog UUID format", err)
 	}
 
 	blog, err := h.blogService.ArchiveBlog(c.Request().Context(), id)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return NotFoundResponse(c, "Blog not found", err)
+		if errors.Is(err, repository.ErrBlogNotFound) {
+			return server.NotFoundResponse(c, "Blog not found", err)
 		}
 		slog.Error("Failed to archive blog",
 			slog.String("error", err.Error()),
-			slog.Int("blog_id", id),
+			slog.String("blog_id", id.String()),
 		)
-		return InternalServerErrorResponse(c, "Failed to archive blog", err)
+		return server.InternalServerErrorResponse(c, "Failed to archive blog", err)
 	}
 
-	return SuccessResponse(c, "Blog archived successfully", blog)
+	return server.SuccessResponse(c, "Blog archived successfully", blog)
 }
 
 func (h *BlogHandler) validateCreateBlogRequest(req service.CreateBlogRequest) error {
@@ -412,8 +415,8 @@ func (h *BlogHandler) validateCreateBlogRequest(req service.CreateBlogRequest) e
 	if len(req.Content) < 10 {
 		return echo.NewHTTPError(http.StatusBadRequest, "content must be at least 10 characters")
 	}
-	if req.AuthorID <= 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "author_id must be a positive integer")
+	if req.AuthorID == uuid.Nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "author_id is required")
 	}
 	return nil
 }

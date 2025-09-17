@@ -19,7 +19,7 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]User, e
 		slog.Error("Failed to list users",
 			slog.String("error", err.Error()),
 		)
-		return nil, fmt.Errorf("failed to list users: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToListUsers, err)
 	}
 	defer rows.Close()
 
@@ -38,7 +38,7 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]User, e
 			slog.Error("Failed to scan user row",
 				slog.String("error", err.Error()),
 			)
-			return nil, fmt.Errorf("failed to scan user row: %w", err)
+			return nil, fmt.Errorf("%w: %w", ErrFailedToScanUserRow, err)
 		}
 		users = append(users, user)
 	}
@@ -47,7 +47,7 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]User, e
 		slog.Error("Error iterating user rows",
 			slog.String("error", err.Error()),
 		)
-		return nil, fmt.Errorf("error iterating user rows: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)
 	}
 
 	return users, nil

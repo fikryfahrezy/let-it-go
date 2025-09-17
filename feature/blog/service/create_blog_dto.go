@@ -3,13 +3,14 @@ package service
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
 type CreateBlogRequest struct {
 	Title    string `json:"title"`
 	Content  string `json:"content"`
-	AuthorID int    `json:"author_id"`
+	AuthorID uuid.UUID `json:"author_id"`
 	Status   string `json:"status"`
 }
 

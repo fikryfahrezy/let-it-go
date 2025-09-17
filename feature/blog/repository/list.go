@@ -19,7 +19,7 @@ func (r *blogRepository) List(ctx context.Context, limit, offset int) ([]Blog, e
 		slog.Error("Failed to list blogs",
 			slog.String("error", err.Error()),
 		)
-		return nil, fmt.Errorf("failed to list blogs: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToListBlogs, err)
 	}
 	defer rows.Close()
 
@@ -40,7 +40,7 @@ func (r *blogRepository) List(ctx context.Context, limit, offset int) ([]Blog, e
 			slog.Error("Failed to scan blog row",
 				slog.String("error", err.Error()),
 			)
-			return nil, fmt.Errorf("failed to scan blog row: %w", err)
+			return nil, fmt.Errorf("%w: %w", ErrFailedToScanBlogRow, err)
 		}
 		blogs = append(blogs, blog)
 	}
@@ -49,7 +49,7 @@ func (r *blogRepository) List(ctx context.Context, limit, offset int) ([]Blog, e
 		slog.Error("Error iterating blog rows",
 			slog.String("error", err.Error()),
 		)
-		return nil, fmt.Errorf("error iterating blog rows: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToIterateRows, err)
 	}
 
 	return blogs, nil

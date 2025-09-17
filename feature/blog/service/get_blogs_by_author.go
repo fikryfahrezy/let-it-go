@@ -4,20 +4,23 @@ import (
 	"context"
 	"fmt"
 	"math"
+
+	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
+	"github.com/google/uuid"
 )
 
-func (s *blogService) GetBlogsByAuthor(ctx context.Context, authorID, page, pageSize int) ([]GetBlogResponse, PaginationInfo, error) {
+func (s *blogService) GetBlogsByAuthor(ctx context.Context, authorID uuid.UUID, page, pageSize int) ([]GetBlogResponse, PaginationInfo, error) {
 	offset := (page - 1) * pageSize
 
 	blogs, err := s.blogRepo.GetByAuthorID(ctx, authorID, pageSize, offset)
 	if err != nil {
-		return nil, PaginationInfo{}, fmt.Errorf("failed to get blogs by author: %w", err)
+		return nil, PaginationInfo{}, fmt.Errorf("%w: %w", repository.ErrFailedToGetBlogsByAuthor, err)
 	}
 
 	// Get total count for pagination (you might want to add a CountByAuthorID method)
 	totalItems, err := s.blogRepo.Count(ctx)
 	if err != nil {
-		return nil, PaginationInfo{}, fmt.Errorf("failed to count blogs: %w", err)
+		return nil, PaginationInfo{}, fmt.Errorf("%w: %w", repository.ErrFailedToCountBlogs, err)
 	}
 
 	pagination := PaginationInfo{

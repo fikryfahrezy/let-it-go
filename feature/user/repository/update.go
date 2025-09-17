@@ -21,9 +21,9 @@ func (r *userRepository) Update(ctx context.Context, user User) error {
 	if err != nil {
 		slog.Error("Failed to update user",
 			slog.String("error", err.Error()),
-			slog.Int("user_id", user.ID),
+			slog.String("user_id", user.ID.String()),
 		)
-		return fmt.Errorf("failed to update user: %w", err)
+		return fmt.Errorf("%w: %w", ErrFailedToUpdateUser, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -31,15 +31,15 @@ func (r *userRepository) Update(ctx context.Context, user User) error {
 		slog.Error("Failed to get rows affected",
 			slog.String("error", err.Error()),
 		)
-		return fmt.Errorf("failed to get rows affected: %w", err)
+		return fmt.Errorf("%w: %w", ErrFailedToGetRowsAffected, err)
 	}
 
 	if rowsAffected == 0 {
-		return fmt.Errorf("user not found")
+		return ErrUserNotFound
 	}
 
 	slog.Info("User updated successfully",
-		slog.Int("user_id", user.ID),
+		slog.String("user_id", user.ID.String()),
 	)
 
 	return nil

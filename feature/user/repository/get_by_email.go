@@ -26,13 +26,13 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (User, er
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return User{}, fmt.Errorf("user not found")
+			return User{}, ErrUserNotFound
 		}
 		slog.Error("Failed to get user by email",
 			slog.String("error", err.Error()),
 			slog.String("email", email),
 		)
-		return User{}, fmt.Errorf("failed to get user by email: %w", err)
+		return User{}, fmt.Errorf("%w: %w", ErrFailedToGetUserByEmail, err)
 	}
 
 	return user, nil
