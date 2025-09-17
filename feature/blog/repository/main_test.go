@@ -73,7 +73,10 @@ func TestMain(m *testing.M) {
 		log.Fatal("Failed to start MySQL container:", err)
 	}
 
-	resource.Expire(60) // 1 minute
+	err = resource.Expire(60) // 1 minute
+	if err != nil {
+		log.Fatalf("Could not set resource expiration: %s", err)
+	}
 
 	dsn := fmt.Sprintf("testuser:testpass@(localhost:%s)/testdb?parseTime=true", resource.GetPort("3306/tcp"))
 

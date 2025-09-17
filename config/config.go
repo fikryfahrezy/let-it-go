@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -23,7 +24,7 @@ type ServerConfig struct {
 
 func Load() Config {
 	loadEnvFile(".env")
-	
+
 	return Config{
 		Server: ServerConfig{
 			Host: getEnv("SERVER_HOST", "localhost"),
@@ -60,12 +61,16 @@ func loadEnvFile(filename string) {
 	if err != nil {
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			slog.Error("Failed to close .env file", slog.String("error", err.Error()))
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		
+
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
@@ -81,7 +86,9 @@ func loadEnvFile(filename string) {
 		value = strings.Trim(value, "\"'")
 
 		if os.Getenv(key) == "" {
-			os.Setenv(key, value)
+			if err := os.Setenv(key, value); err != nil {
+				slog.Error("Failed to set environment variable", slog.String("key", key), slog.String("error", err.Error()))
+			}
 		}
 	}
 }

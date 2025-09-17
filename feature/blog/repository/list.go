@@ -21,7 +21,11 @@ func (r *blogRepository) List(ctx context.Context, limit, offset int) ([]Blog, e
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToListBlogs, err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			r.log.Error("Failed to close list blogs rows", slog.String("error", err.Error()))
+		}
+	}()
 
 	var blogs []Blog
 	for rows.Next() {

@@ -25,7 +25,11 @@ func (r *blogRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID, 
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToGetBlogsByAuthor, err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			r.log.Error("Failed to close get blogs by author ID", slog.String("error", err.Error()))
+		}
+	}()
 
 	var blogs []Blog
 	for rows.Next() {

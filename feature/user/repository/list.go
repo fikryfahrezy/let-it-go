@@ -21,7 +21,11 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]User, e
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToListUsers, err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			r.log.Error("Failed to close list users rows", slog.String("error", err.Error()))
+		}
+	}()
 
 	var users []User
 	for rows.Next() {

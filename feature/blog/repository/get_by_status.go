@@ -23,7 +23,11 @@ func (r *blogRepository) GetByStatus(ctx context.Context, status string, limit, 
 		)
 		return nil, fmt.Errorf("%w: %w", ErrFailedToGetBlogsByStatus, err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			r.log.Error("Failed to close get blogs by status", slog.String("error", err.Error()))
+		}
+	}()
 
 	var blogs []Blog
 	for rows.Next() {

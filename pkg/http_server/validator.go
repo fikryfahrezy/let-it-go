@@ -1,6 +1,7 @@
 package http_server
 
 import (
+	"log/slog"
 	"reflect"
 	"strings"
 
@@ -34,7 +35,10 @@ func NewCustomValidator() *CustomValidator {
 	en := en.New()
 	uni := ut.New(en, en)
 	trans, _ := uni.GetTranslator("en")
-	en_translations.RegisterDefaultTranslations(validate, trans)
+	err := en_translations.RegisterDefaultTranslations(validate, trans)
+	if err != nil {
+		slog.Error("Failed to register translations", slog.String("error", err.Error()))
+	}
 
 	return &CustomValidator{
 		validator: validate,
