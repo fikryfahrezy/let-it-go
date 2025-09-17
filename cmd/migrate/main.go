@@ -53,7 +53,11 @@ func main() {
 		log.Error("Failed to connect to database", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Error("Failed to close database connection", slog.String("error", err.Error()))
+		}
+	}()
 
 	driver, err := mysql.WithInstance(db.DB, &mysql.Config{})
 	if err != nil {
