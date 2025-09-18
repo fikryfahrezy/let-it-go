@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
@@ -12,12 +13,8 @@ func TestCount(t *testing.T) {
 
 	// Initially empty
 	count, err := testRepository.Count(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 0 {
-		t.Errorf("Expected count 0, got %d", count)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), count)
 
 	// Create test blogs
 	blogs := []repository.Blog{
@@ -37,18 +34,12 @@ func TestCount(t *testing.T) {
 
 	for _, blog := range blogs {
 		err := testRepository.Create(context.Background(), blog)
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}
 
 	count, err = testRepository.Count(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Errorf("Expected count 2, got %d", count)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), count)
 }
 
 func TestCountByStatus(t *testing.T) {
@@ -78,33 +69,19 @@ func TestCountByStatus(t *testing.T) {
 
 	for _, blog := range blogs {
 		err := testRepository.Create(context.Background(), blog)
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}
 
 	// Test count by status
 	count, err := testRepository.CountByStatus(context.Background(), repository.StatusDraft)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Errorf("Expected draft count 2, got %d", count)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), count)
 
 	count, err = testRepository.CountByStatus(context.Background(), repository.StatusPublished)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 1 {
-		t.Errorf("Expected published count 1, got %d", count)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), count)
 
 	count, err = testRepository.CountByStatus(context.Background(), repository.StatusArchived)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 0 {
-		t.Errorf("Expected archived count 0, got %d", count)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), count)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
@@ -34,33 +35,19 @@ func TestList(t *testing.T) {
 
 	for _, blog := range blogs {
 		err := testRepository.Create(context.Background(), blog)
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}
 
 	// Test pagination
 	result, err := testRepository.List(context.Background(), 2, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(result) != 2 {
-		t.Errorf("Expected 2 blogs, got %d", len(result))
-	}
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
 
 	result, err = testRepository.List(context.Background(), 2, 1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(result) != 2 {
-		t.Errorf("Expected 2 blogs, got %d", len(result))
-	}
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
 
 	result, err = testRepository.List(context.Background(), 10, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(result) != 3 {
-		t.Errorf("Expected 3 blogs, got %d", len(result))
-	}
+	assert.NoError(t, err)
+	assert.Len(t, result, 3)
 }

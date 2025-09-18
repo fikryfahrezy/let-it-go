@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
@@ -19,28 +20,18 @@ func TestDelete(t *testing.T) {
 	}
 
 	err := testRepository.Create(context.Background(), blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	createdBlog, err := getBlogByTitle(blog.Title)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	err = testRepository.Delete(context.Background(), createdBlog.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	// Verify deletion
 	_, err = testRepository.GetByID(context.Background(), createdBlog.ID)
-	if err == nil {
-		t.Error("Expected error, got nil")
-	}
-	if err != repository.ErrBlogNotFound {
-		t.Errorf("Expected ErrBlogNotFound, got %v", err)
-	}
+	assert.Error(t, err)
+	assert.Equal(t, repository.ErrBlogNotFound, err)
 }
 
 func TestDeleteNotFound(t *testing.T) {
@@ -48,10 +39,6 @@ func TestDeleteNotFound(t *testing.T) {
 
 	randomID := uuid.New()
 	err := testRepository.Delete(context.Background(), randomID)
-	if err == nil {
-		t.Error("Expected error, got nil")
-	}
-	if err != repository.ErrBlogNotFound {
-		t.Errorf("Expected ErrBlogNotFound, got %v", err)
-	}
+	assert.Error(t, err)
+	assert.Equal(t, repository.ErrBlogNotFound, err)
 }

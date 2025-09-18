@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
@@ -20,41 +21,21 @@ func TestCreate(t *testing.T) {
 	}
 
 	err := testRepository.Create(context.Background(), blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	// Verify blog was created by getting all blogs and checking the title
 	blogs, err := testRepository.List(context.Background(), 10, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(blogs) != 1 {
-		t.Errorf("Expected 1 blog, got %d", len(blogs))
-	}
+	assert.NoError(t, err)
+	assert.Len(t, blogs, 1)
 
 	result := blogs[0]
-	if result.ID == uuid.Nil {
-		t.Error("Expected non-nil ID")
-	}
-	if result.Title != blog.Title {
-		t.Errorf("Expected title %s, got %s", blog.Title, result.Title)
-	}
-	if result.Content != blog.Content {
-		t.Errorf("Expected content %s, got %s", blog.Content, result.Content)
-	}
-	if result.AuthorID != blog.AuthorID {
-		t.Errorf("Expected authorID %s, got %s", blog.AuthorID, result.AuthorID)
-	}
-	if result.Status != blog.Status {
-		t.Errorf("Expected status %s, got %s", blog.Status, result.Status)
-	}
-	if result.CreatedAt.IsZero() {
-		t.Error("Expected non-zero CreatedAt")
-	}
-	if result.UpdatedAt.IsZero() {
-		t.Error("Expected non-zero UpdatedAt")
-	}
+	assert.NotEqual(t, uuid.Nil, result.ID)
+	assert.Equal(t, blog.Title, result.Title)
+	assert.Equal(t, blog.Content, result.Content)
+	assert.Equal(t, blog.AuthorID, result.AuthorID)
+	assert.Equal(t, blog.Status, result.Status)
+	assert.False(t, result.CreatedAt.IsZero())
+	assert.False(t, result.UpdatedAt.IsZero())
 }
 
 func TestCreateWithPublishedStatus(t *testing.T) {
@@ -70,18 +51,10 @@ func TestCreateWithPublishedStatus(t *testing.T) {
 	}
 
 	err := testRepository.Create(context.Background(), blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	result, err := getBlogByTitle(blog.Title)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.Status != repository.StatusPublished {
-		t.Errorf("Expected status %s, got %s", repository.StatusPublished, result.Status)
-	}
-	if result.PublishedAt == nil {
-		t.Error("Expected non-nil PublishedAt")
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, repository.StatusPublished, result.Status)
+	assert.NotNil(t, result.PublishedAt)
 }

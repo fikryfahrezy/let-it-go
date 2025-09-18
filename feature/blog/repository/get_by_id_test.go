@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/fikryfahrezy/let-it-go/feature/blog/repository"
 )
 
@@ -29,18 +30,10 @@ func TestGetByID(t *testing.T) {
 	}
 
 	result, err := testRepository.GetByID(context.Background(), createdBlog.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.ID != createdBlog.ID {
-		t.Errorf("Expected ID %s, got %s", createdBlog.ID, result.ID)
-	}
-	if result.Title != blog.Title {
-		t.Errorf("Expected title %s, got %s", blog.Title, result.Title)
-	}
-	if result.Content != blog.Content {
-		t.Errorf("Expected content %s, got %s", blog.Content, result.Content)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, createdBlog.ID, result.ID)
+	assert.Equal(t, blog.Title, result.Title)
+	assert.Equal(t, blog.Content, result.Content)
 }
 
 func TestGetByIDNotFound(t *testing.T) {
@@ -48,10 +41,6 @@ func TestGetByIDNotFound(t *testing.T) {
 
 	randomID := uuid.New()
 	_, err := testRepository.GetByID(context.Background(), randomID)
-	if err == nil {
-		t.Error("Expected error, got nil")
-	}
-	if err != repository.ErrBlogNotFound {
-		t.Errorf("Expected ErrBlogNotFound, got %v", err)
-	}
+	assert.Error(t, err)
+	assert.Equal(t, repository.ErrBlogNotFound, err)
 }
