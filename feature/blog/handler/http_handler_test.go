@@ -92,7 +92,7 @@ func TestBlogHandler_CreateBlog_ValidationError(t *testing.T) {
 
 	err = blogHandler.CreateBlog(c)
 	assert.NoError(t, err)
-	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 
 	// Service should not be called on validation error
 	assert.Equal(t, 0, mockService.CreateBlogCallCount())
@@ -120,7 +120,7 @@ func TestBlogHandler_CreateBlog_InvalidStatus(t *testing.T) {
 
 	err = blogHandler.CreateBlog(c)
 	assert.NoError(t, err)
-	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 
 	// Service should not be called on validation error
 	assert.Equal(t, 0, mockService.CreateBlogCallCount())

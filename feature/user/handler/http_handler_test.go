@@ -86,7 +86,7 @@ func TestUserHandler_CreateUser_ValidationError(t *testing.T) {
 
 	err = userHandler.CreateUser(c)
 	assert.NoError(t, err)
-	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 
 	// Service should not be called on validation error
 	assert.Equal(t, 0, mockService.CreateUserCallCount())
