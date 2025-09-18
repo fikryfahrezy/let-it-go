@@ -64,7 +64,7 @@ func ListSuccessResponse(c echo.Context, message string, data any, pagination Pa
 }
 
 func ErrorResponse(c echo.Context, statusCode int, message string, err error) error {
-	errorCode := "UNKNOWN_ERROR"
+	errorCode := http.StatusText(statusCode)
 	errorMessage := message
 	var errorFields map[string]any
 
@@ -106,9 +106,9 @@ func InternalServerErrorResponse(c echo.Context, message string, err error) erro
 
 // ValidationErrorResponse creates a response for validation errors with field-specific errors
 func ValidationErrorResponse(c echo.Context, message string, errorFields map[string]any) error {
-	return c.JSON(http.StatusBadRequest, APIResponse{
+	return c.JSON(http.StatusUnprocessableEntity, APIResponse{
 		Message:     message,
-		Error:       "VALIDATION_ERROR",
+		Error:       http.StatusText(http.StatusUnprocessableEntity),
 		ErrorFields: errorFields,
 	})
 }
