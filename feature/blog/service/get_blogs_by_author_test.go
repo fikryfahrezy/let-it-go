@@ -55,7 +55,7 @@ func TestBlogService_GetBlogsByAuthor_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
-	assert.Equal(t, 2, totalCount)
+	assert.Equal(t, int64(2), totalCount)
 
 	// Verify first blog
 	assert.Equal(t, expectedBlogs[0].ID, result[0].ID)

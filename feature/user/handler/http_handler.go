@@ -221,7 +221,7 @@ func (h *UserHandler) ListUsers(c echo.Context) error {
 		return h.translateServiceError(c, err, "Failed to list users")
 	}
 
-	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	totalPages := int64(math.Ceil(float64(totalCount) / float64(pageSize)))
 	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
 
 	return http_server.ListSuccessResponse(c, "Users retrieved successfully", users, pagination)

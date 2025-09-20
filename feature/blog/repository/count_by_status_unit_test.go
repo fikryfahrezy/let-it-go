@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCountBlogUnit(t *testing.T) {
+func TestCountByStatusBlogUnit(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
 	// nolint:errcheck
@@ -22,14 +22,15 @@ func TestCountBlogUnit(t *testing.T) {
 	repo := repository.NewBlogRepository(logger.NewDiscardLogger(), db)
 	ctx := context.Background()
 
-	expectedCount := 5
+	expectedCount := 3
 
-	// Mock the COUNT query
+	// Mock the COUNT query with status filter
 	rows := sqlmock.NewRows([]string{"count"}).AddRow(expectedCount)
-	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM blogs").
+	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM blogs WHERE status = ?").
+		WithArgs(repository.StatusPublished).
 		WillReturnRows(rows)
 
-	count, err := repo.Count(ctx)
+	count, err := repo.CountByStatus(ctx, repository.StatusPublished)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedCount, count)
 

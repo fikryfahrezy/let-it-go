@@ -6,10 +6,10 @@ import (
 	"log/slog"
 )
 
-func (r *userRepository) Count(ctx context.Context) (int, error) {
+func (r *userRepository) Count(ctx context.Context) (int64, error) {
 	query := `SELECT COUNT(*) FROM users`
 
-	var count int
+	var count int64
 	err := r.db.QueryRowContext(ctx, query).Scan(&count)
 	if err != nil {
 		r.log.Error("Failed to count users",

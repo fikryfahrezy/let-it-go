@@ -5,7 +5,7 @@ import (
 	"log/slog"
 )
 
-func (s *userService) ListUsers(ctx context.Context, req ListUsersRequest) ([]ListUsersResponse, int, error) {
+func (s *userService) ListUsers(ctx context.Context, req ListUsersRequest) ([]ListUsersResponse, int64, error) {
 	s.log.Info("Listing users",
 		slog.Int("page", req.Page),
 		slog.Int("page_size", req.PageSize),
@@ -31,7 +31,7 @@ func (s *userService) ListUsers(ctx context.Context, req ListUsersRequest) ([]Li
 
 	s.log.Info("Users listed successfully",
 		slog.Int("count", len(responses)),
-		slog.Int("total", total),
+		slog.Int64("total", total),
 	)
 
 	return responses, total, nil

@@ -52,7 +52,7 @@ func TestUserService_ListUsers_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
-	assert.Equal(t, 2, totalCount)
+	assert.Equal(t, int64(2), totalCount)
 
 	// Verify first user
 	assert.Equal(t, expectedUsers[0].ID, result[0].ID)
@@ -98,7 +98,7 @@ func TestUserService_ListUsers_WithCustomPagination(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Len(t, result, 1)
-	assert.Equal(t, 25, totalCount)
+	assert.Equal(t, int64(25), totalCount)
 
 	// Verify repository calls
 	assert.Equal(t, 1, mockRepo.ListCallCount())
@@ -126,7 +126,7 @@ func TestUserService_ListUsers_EmptyResult(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Empty(t, result)
-	assert.Equal(t, 0, totalCount)
+	assert.Equal(t, int64(0), totalCount)
 
 	// Verify repository calls
 	assert.Equal(t, 1, mockRepo.ListCallCount())

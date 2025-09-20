@@ -10,17 +10,17 @@ import (
 )
 
 type FakeUserRepository struct {
-	CountStub        func(context.Context) (int, error)
+	CountStub        func(context.Context) (int64, error)
 	countMutex       sync.RWMutex
 	countArgsForCall []struct {
 		arg1 context.Context
 	}
 	countReturns struct {
-		result1 int
+		result1 int64
 		result2 error
 	}
 	countReturnsOnCall map[int]struct {
-		result1 int
+		result1 int64
 		result2 error
 	}
 	CreateStub        func(context.Context, repository.User) error
@@ -106,7 +106,7 @@ type FakeUserRepository struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUserRepository) Count(arg1 context.Context) (int, error) {
+func (fake *FakeUserRepository) Count(arg1 context.Context) (int64, error) {
 	fake.countMutex.Lock()
 	ret, specificReturn := fake.countReturnsOnCall[len(fake.countArgsForCall)]
 	fake.countArgsForCall = append(fake.countArgsForCall, struct {
@@ -131,7 +131,7 @@ func (fake *FakeUserRepository) CountCallCount() int {
 	return len(fake.countArgsForCall)
 }
 
-func (fake *FakeUserRepository) CountCalls(stub func(context.Context) (int, error)) {
+func (fake *FakeUserRepository) CountCalls(stub func(context.Context) (int64, error)) {
 	fake.countMutex.Lock()
 	defer fake.countMutex.Unlock()
 	fake.CountStub = stub
@@ -144,28 +144,28 @@ func (fake *FakeUserRepository) CountArgsForCall(i int) context.Context {
 	return argsForCall.arg1
 }
 
-func (fake *FakeUserRepository) CountReturns(result1 int, result2 error) {
+func (fake *FakeUserRepository) CountReturns(result1 int64, result2 error) {
 	fake.countMutex.Lock()
 	defer fake.countMutex.Unlock()
 	fake.CountStub = nil
 	fake.countReturns = struct {
-		result1 int
+		result1 int64
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserRepository) CountReturnsOnCall(i int, result1 int, result2 error) {
+func (fake *FakeUserRepository) CountReturnsOnCall(i int, result1 int64, result2 error) {
 	fake.countMutex.Lock()
 	defer fake.countMutex.Unlock()
 	fake.CountStub = nil
 	if fake.countReturnsOnCall == nil {
 		fake.countReturnsOnCall = make(map[int]struct {
-			result1 int
+			result1 int64
 			result2 error
 		})
 	}
 	fake.countReturnsOnCall[i] = struct {
-		result1 int
+		result1 int64
 		result2 error
 	}{result1, result2}
 }

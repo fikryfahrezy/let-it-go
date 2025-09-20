@@ -229,7 +229,7 @@ func (h *BlogHandler) ListBlogs(c echo.Context) error {
 		return h.translateServiceError(c, err, "Failed to list blogs")
 	}
 
-	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	totalPages := int64(math.Ceil(float64(totalCount) / float64(pageSize)))
 	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
 
 	return http_server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
@@ -286,7 +286,7 @@ func (h *BlogHandler) GetBlogsByAuthor(c echo.Context) error {
 		return h.translateServiceError(c, err, "Failed to get blogs by author")
 	}
 
-	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	totalPages := int64(math.Ceil(float64(totalCount) / float64(pageSize)))
 	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
 
 	return http_server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)
@@ -339,7 +339,7 @@ func (h *BlogHandler) GetBlogsByStatus(c echo.Context) error {
 		return h.translateServiceError(c, err, "Failed to get blogs by status")
 	}
 
-	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	totalPages := int64(math.Ceil(float64(totalCount) / float64(pageSize)))
 	pagination := http_server.CreatePaginationResponse(totalCount, totalPages, page, pageSize)
 
 	return http_server.ListSuccessResponse(c, "Blogs retrieved successfully", blogs, pagination)

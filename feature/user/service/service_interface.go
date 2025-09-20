@@ -13,5 +13,5 @@ type UserService interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserResponse, error)
 	UpdateUser(ctx context.Context, id uuid.UUID, req UpdateUserRequest) (UpdateUserResponse, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
-	ListUsers(ctx context.Context, req ListUsersRequest) ([]ListUsersResponse, int, error)
+	ListUsers(ctx context.Context, req ListUsersRequest) ([]ListUsersResponse, int64, error)
 }

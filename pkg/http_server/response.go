@@ -26,10 +26,10 @@ type ListAPIResponse struct {
 
 // PaginationResponse represents pagination metadata
 type PaginationResponse struct {
-	TotalData  int `json:"total_data"`
-	TotalPages int `json:"total_pages"`
-	Page       int `json:"page"`
-	Limit      int `json:"limit"`
+	TotalData  int64 `json:"total_data"`
+	TotalPages int64 `json:"total_pages"`
+	Page       int   `json:"page"`
+	Limit      int   `json:"limit"`
 }
 
 // PaginationRequest represents pagination input parameters
@@ -114,7 +114,7 @@ func ValidationErrorResponse(c echo.Context, message string, errorFields map[str
 }
 
 // CreatePaginationResponse creates a pagination response object
-func CreatePaginationResponse(totalData, totalPages, page, limit int) PaginationResponse {
+func CreatePaginationResponse(totalData, totalPages int64, page, limit int) PaginationResponse {
 	return PaginationResponse{
 		TotalData:  totalData,
 		TotalPages: totalPages,

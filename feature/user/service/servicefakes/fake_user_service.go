@@ -50,7 +50,7 @@ type FakeUserService struct {
 		result1 service.GetUserResponse
 		result2 error
 	}
-	ListUsersStub        func(context.Context, service.ListUsersRequest) ([]service.ListUsersResponse, int, error)
+	ListUsersStub        func(context.Context, service.ListUsersRequest) ([]service.ListUsersResponse, int64, error)
 	listUsersMutex       sync.RWMutex
 	listUsersArgsForCall []struct {
 		arg1 context.Context
@@ -58,12 +58,12 @@ type FakeUserService struct {
 	}
 	listUsersReturns struct {
 		result1 []service.ListUsersResponse
-		result2 int
+		result2 int64
 		result3 error
 	}
 	listUsersReturnsOnCall map[int]struct {
 		result1 []service.ListUsersResponse
-		result2 int
+		result2 int64
 		result3 error
 	}
 	UpdateUserStub        func(context.Context, uuid.UUID, service.UpdateUserRequest) (service.UpdateUserResponse, error)
@@ -277,7 +277,7 @@ func (fake *FakeUserService) GetUserByIDReturnsOnCall(i int, result1 service.Get
 	}{result1, result2}
 }
 
-func (fake *FakeUserService) ListUsers(arg1 context.Context, arg2 service.ListUsersRequest) ([]service.ListUsersResponse, int, error) {
+func (fake *FakeUserService) ListUsers(arg1 context.Context, arg2 service.ListUsersRequest) ([]service.ListUsersResponse, int64, error) {
 	fake.listUsersMutex.Lock()
 	ret, specificReturn := fake.listUsersReturnsOnCall[len(fake.listUsersArgsForCall)]
 	fake.listUsersArgsForCall = append(fake.listUsersArgsForCall, struct {
@@ -303,7 +303,7 @@ func (fake *FakeUserService) ListUsersCallCount() int {
 	return len(fake.listUsersArgsForCall)
 }
 
-func (fake *FakeUserService) ListUsersCalls(stub func(context.Context, service.ListUsersRequest) ([]service.ListUsersResponse, int, error)) {
+func (fake *FakeUserService) ListUsersCalls(stub func(context.Context, service.ListUsersRequest) ([]service.ListUsersResponse, int64, error)) {
 	fake.listUsersMutex.Lock()
 	defer fake.listUsersMutex.Unlock()
 	fake.ListUsersStub = stub
@@ -316,31 +316,31 @@ func (fake *FakeUserService) ListUsersArgsForCall(i int) (context.Context, servi
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserService) ListUsersReturns(result1 []service.ListUsersResponse, result2 int, result3 error) {
+func (fake *FakeUserService) ListUsersReturns(result1 []service.ListUsersResponse, result2 int64, result3 error) {
 	fake.listUsersMutex.Lock()
 	defer fake.listUsersMutex.Unlock()
 	fake.ListUsersStub = nil
 	fake.listUsersReturns = struct {
 		result1 []service.ListUsersResponse
-		result2 int
+		result2 int64
 		result3 error
 	}{result1, result2, result3}
 }
 
-func (fake *FakeUserService) ListUsersReturnsOnCall(i int, result1 []service.ListUsersResponse, result2 int, result3 error) {
+func (fake *FakeUserService) ListUsersReturnsOnCall(i int, result1 []service.ListUsersResponse, result2 int64, result3 error) {
 	fake.listUsersMutex.Lock()
 	defer fake.listUsersMutex.Unlock()
 	fake.ListUsersStub = nil
 	if fake.listUsersReturnsOnCall == nil {
 		fake.listUsersReturnsOnCall = make(map[int]struct {
 			result1 []service.ListUsersResponse
-			result2 int
+			result2 int64
 			result3 error
 		})
 	}
 	fake.listUsersReturnsOnCall[i] = struct {
 		result1 []service.ListUsersResponse
-		result2 int
+		result2 int64
 		result3 error
 	}{result1, result2, result3}
 }
