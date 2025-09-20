@@ -12,14 +12,15 @@ This application follows a feature-based architecture pattern:
   - `entity.go` - Domain models
   - `repository.go` - Repository struct and constructor
   - `repository_interface.go` - Repository interface
-  - `count.go` - Count method implementation
-  - `*_test.go` - Individual test files for each method
-  - Individual service methods: `list.go`, `count.go`, etc.
+  - `<method>_dto.go` - Method specific DTOs
+  - `<method>_test.go` - Individual test files for each method
+  - `<method>.go` - Individual repository methods: `list.go`, `count.go`, etc.
 - **Service Package**: `feature/<feature_name>/service/`
   - `service.go` - Service implementation
   - `service_interface.go` - Service interface
-  - `*_dto.go` - Action-specific DTOs with conversion functions
-  - Individual service methods: `create.go`, `get.go`, etc.
+  - `<method>_dto.go` - Action-specific DTOs with conversion functions
+  - `<method>_test.go` - Individual test files for each method
+  - `<method>.go` - Individual service methods: `archive_user_document.go`, `charge_user_balance.go`, etc.
 - **Handler Package**: `feature/<feature_name>/handler/`
   - `http_handler.go` - HTTP handlers with routing and Swagger annotations
   - `http_handler_v2.go` - Version 2 HTTP handlers (if using API versioning)
@@ -44,12 +45,14 @@ project-root/
 │       │   ├── repository.go
 │       │   ├── repository_interface.go
 │       │   ├── <method>.go
-│       │   └── *_test.go
+│       │   ├── <method>_dto.go
+│       │   └── <method>_test.go
 │       ├── service/     # Business logic layer
 │       │   ├── service.go
 │       │   ├── service_interface.go
 │       │   ├── <method>.go
-│       │   └── *_dto.go
+│       │   └── <method>_dto.go
+│       │   └── <method>_test.go
 │       └── handler/     # Presentation layer
 │           ├── http_handler.go      # Main HTTP handlers with Swagger docs
 │           ├── http_handler_v2.go   # Version 2 handlers
