@@ -15,7 +15,7 @@ func TestCount(t *testing.T) {
 	// Initially empty
 	count, err := testRepository.Count(context.Background())
 	assert.NoError(t, err)
-	assert.Equal(t, 0, count)
+	assert.Equal(t, int64(0), count)
 
 	// Create test users
 	users := []repository.User{

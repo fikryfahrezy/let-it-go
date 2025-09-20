@@ -22,7 +22,7 @@ func TestCountUnit(t *testing.T) {
 	repo := repository.NewUserRepository(logger.NewDiscardLogger(), db)
 	ctx := context.Background()
 
-	expectedCount := 5
+	expectedCount := int64(5)
 
 	// Mock the COUNT query
 	rows := sqlmock.NewRows([]string{"count"}).AddRow(expectedCount)
