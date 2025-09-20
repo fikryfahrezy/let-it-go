@@ -38,5 +38,5 @@ func TestCount(t *testing.T) {
 
 	count, err = testRepository.Count(context.Background())
 	assert.NoError(t, err)
-	assert.Equal(t, 2, count)
+	assert.Equal(t, int64(2), count)
 }

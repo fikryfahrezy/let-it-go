@@ -54,7 +54,7 @@ func TestCountZeroUnit(t *testing.T) {
 
 	count, err := repo.Count(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, count)
+	assert.Equal(t, int64(0), count)
 
 	// Verify all expectations were met
 	assert.NoError(t, mock.ExpectationsWereMet())
