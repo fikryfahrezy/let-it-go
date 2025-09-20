@@ -42,7 +42,7 @@ func sampleTask(log *slog.Logger, userSrv userService.UserService, blogSrv blogS
 			)
 			return
 		}
-		log.Info("Fetched users", slog.Int("count", len(users)), slog.Int("total", userCount))
+		log.Info("Fetched users", slog.Int("count", len(users)), slog.Int64("total", userCount))
 
 		blogs, blogCount, err := blogSrv.ListBlogs(ctx, blogService.ListBlogsRequest{
 			PaginationRequest: http_server.PaginationRequest{
@@ -56,7 +56,7 @@ func sampleTask(log *slog.Logger, userSrv userService.UserService, blogSrv blogS
 			)
 			return
 		}
-		log.Info("Fetched blogs", slog.Int("count", len(blogs)), slog.Int("total", blogCount))
+		log.Info("Fetched blogs", slog.Int("count", len(blogs)), slog.Int64("total", blogCount))
 	}
 }
 
