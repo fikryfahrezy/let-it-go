@@ -406,14 +406,13 @@ func (h *BlogHandler) ArchiveBlog(c echo.Context) error {
 }
 
 // SetupRoutes configures all API routes for blogs
-func (h *BlogHandler) SetupRoutes(api *echo.Group) {
-	v1 := api.Group("/v1")
-	h.setupV1Routes(v1)
+func (h *BlogHandler) SetupRoutes(server *http_server.Server) {
+	h.setupV1Routes(server)
 }
 
 // setupV1Routes configures v1 API routes for blogs
-func (h *BlogHandler) setupV1Routes(v1 *echo.Group) {
-	blogs := v1.Group("/blogs")
+func (h *BlogHandler) setupV1Routes(server *http_server.Server) {
+	blogs := server.Echo().Group("/v1/blogs")
 	blogs.POST("", h.CreateBlog)
 	blogs.GET("", h.ListBlogs)
 	blogs.GET("/:id", h.GetBlog)

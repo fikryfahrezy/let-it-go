@@ -235,19 +235,17 @@ func (h *UserHandler) HealthCheck(c echo.Context) error {
 }
 
 // SetupRoutes configures all versioned API routes for users
-func (h *UserHandler) SetupRoutes(api *echo.Group) {
+func (h *UserHandler) SetupRoutes(server *http_server.Server) {
 	// v1 routes
-	v1 := api.Group("/v1")
-	h.setupV1Routes(v1)
+	h.setupV1Routes(server)
 
 	// v2 routes with enhanced features
-	v2 := api.Group("/v2")
-	h.setupV2Routes(v2)
+	h.setupV2Routes(server)
 }
 
 // setupV1Routes configures v1 API routes for users
-func (h *UserHandler) setupV1Routes(v1 *echo.Group) {
-	users := v1.Group("/users")
+func (h *UserHandler) setupV1Routes(server *http_server.Server) {
+	users := server.Echo().Group("/v1/users")
 	users.POST("", h.CreateUser)
 	users.GET("", h.ListUsers)
 	users.GET("/:id", h.GetUser)

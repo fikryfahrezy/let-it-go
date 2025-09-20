@@ -6,14 +6,14 @@ import (
 )
 
 // setupV2Routes configures v2 API routes for users with enhanced features
-func (h *UserHandler) setupV2Routes(v2 *echo.Group) {
-	users := v2.Group("/users")
+func (h *UserHandler) setupV2Routes(server *http_server.Server) {
+	users := server.Echo().Group("/v2/users")
 	users.POST("", h.CreateUser)
 	users.GET("", h.ListUsers)
 	users.GET("/:id", h.GetUser)
 	users.PUT("/:id", h.UpdateUser)
 	users.DELETE("/:id", h.DeleteUser)
-	
+
 	// v2 specific endpoints
 	users.GET("/:id/profile", h.GetUserProfile)
 	users.POST("/batch", h.BatchUserOperations)
@@ -32,7 +32,7 @@ func (h *UserHandler) GetUserProfile(c echo.Context) error {
 func (h *UserHandler) BatchUserOperations(c echo.Context) error {
 	data := map[string]any{
 		"version": "v2",
-		"status": "pending",
+		"status":  "pending",
 	}
 	return http_server.SuccessResponse(c, "Batch user operations (v2)", data)
 }

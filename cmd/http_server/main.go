@@ -75,13 +75,7 @@ func main() {
 	healthHandlerInstance := healthHandler.NewHealthHandler(db, version, commit, buildTime)
 
 	// Create and initialize server
-	srv, err := server.New(serverConfig)
-	if err != nil {
-		log.Error("Failed to create server",
-			slog.String("error", err.Error()),
-		)
-		os.Exit(1)
-	}
+	srv := server.New(serverConfig)
 
 	routeHandlers := []server.RouteHandler{
 		healthHandlerInstance,

@@ -16,41 +16,42 @@ type Config struct {
 	Port int
 }
 
-// RouteHandler defines interface for features to register their routes
-type RouteHandler interface {
-	SetupRoutes(api *echo.Group)
-}
-
 // Server manages the application server lifecycle
 type Server struct {
 	config Config
 	echo   *echo.Echo
 }
 
+// RouteHandler defines interface for features to register their routes
+type RouteHandler interface {
+	SetupRoutes(server *Server)
+}
+
 // New creates a new server instance
-func New(config Config) (*Server, error) {
+func New(config Config) *Server {
+	// Initialize Echo server
+	e := echo.New()
+
 	return &Server{
 		config: config,
-	}, nil
+		echo:   e,
+	}
 }
 
 // Initialize sets up the server with dependencies
 func (s *Server) Initialize(handlers []RouteHandler) error {
 	slog.Info("Initializing server")
 
-	// Initialize Echo server
-	e := echo.New()
-
 	// Set custom validator
-	e.Validator = NewCustomValidator()
+	s.echo.Validator = NewCustomValidator()
 
 	// Configure middleware
-	// e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	// s.echo.Use(middleware.Logger())
+	s.echo.Use(middleware.Recover())
+	s.echo.Use(middleware.CORS())
 
 	// Request logging with slog
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
 		LogStatus: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
@@ -65,27 +66,24 @@ func (s *Server) Initialize(handlers []RouteHandler) error {
 	}))
 
 	// Setup API routes
-	s.setupAPIRoutes(e, handlers)
+	s.setupAPIRoutes(handlers)
 
-	s.echo = e
 	return nil
 }
 
 // setupAPIRoutes configures all API routes for all versions
-func (s *Server) setupAPIRoutes(e *echo.Echo, handlers []RouteHandler) {
+func (s *Server) setupAPIRoutes(handlers []RouteHandler) {
 	// Swagger documentation - accessible at /swagger/index.html
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	s.echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Redirect /swagger to /swagger/index.html for convenience
-	e.GET("/swagger", func(c echo.Context) error {
+	s.echo.GET("/swagger", func(c echo.Context) error {
 		return c.Redirect(302, "/swagger/index.html")
 	})
 
-	api := e.Group("/api")
-
 	// Let each feature register its own routes
 	for _, handler := range handlers {
-		handler.SetupRoutes(api)
+		handler.SetupRoutes(s)
 	}
 }
 
@@ -106,4 +104,8 @@ func (s *Server) Start() error {
 func (s *Server) Stop(ctx context.Context) error {
 	slog.Info("Stopping server...")
 	return s.echo.Shutdown(ctx)
+}
+
+func (s *Server) Echo() *echo.Echo {
+	return s.echo
 }

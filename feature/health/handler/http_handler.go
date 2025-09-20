@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/fikryfahrezy/let-it-go/pkg/database"
+	"github.com/fikryfahrezy/let-it-go/pkg/http_server"
 	"github.com/labstack/echo/v4"
 )
 
@@ -60,7 +61,7 @@ func (h *HealthHandler) HealthCheck(c echo.Context) error {
 }
 
 // SetupRoutes configures health check routes
-func (h *HealthHandler) SetupRoutes(api *echo.Group) {
+func (h *HealthHandler) SetupRoutes(server *http_server.Server) {
 	// Health check endpoint (no versioning needed)
-	api.GET("/health", h.HealthCheck)
+	server.Echo().GET("/health", h.HealthCheck)
 }
