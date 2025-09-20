@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *blogService) GetBlogsByAuthor(ctx context.Context, authorID uuid.UUID, req GetBlogsByAuthorRequest) ([]GetBlogResponse, int, error) {
+func (s *blogService) GetBlogsByAuthor(ctx context.Context, authorID uuid.UUID, req GetBlogsByAuthorRequest) ([]GetBlogResponse, int64, error) {
 	offset := (req.Page - 1) * req.PageSize
 
 	blogs, err := s.blogRepo.GetByAuthorID(ctx, authorID, req.PageSize, offset)

@@ -11,7 +11,7 @@ type blogService struct {
 	log      *slog.Logger
 }
 
-func NewBlogService(log *slog.Logger, blogRepo repository.BlogRepository) BlogService {
+func NewBlogService(log *slog.Logger, blogRepo repository.BlogRepository) *blogService {
 	return &blogService{
 		blogRepo: blogRepo,
 		log:      log,

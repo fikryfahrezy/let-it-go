@@ -10,31 +10,31 @@ import (
 )
 
 type FakeBlogRepository struct {
-	CountStub        func(context.Context) (int, error)
+	CountStub        func(context.Context) (int64, error)
 	countMutex       sync.RWMutex
 	countArgsForCall []struct {
 		arg1 context.Context
 	}
 	countReturns struct {
-		result1 int
+		result1 int64
 		result2 error
 	}
 	countReturnsOnCall map[int]struct {
-		result1 int
+		result1 int64
 		result2 error
 	}
-	CountByStatusStub        func(context.Context, string) (int, error)
+	CountByStatusStub        func(context.Context, string) (int64, error)
 	countByStatusMutex       sync.RWMutex
 	countByStatusArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 	}
 	countByStatusReturns struct {
-		result1 int
+		result1 int64
 		result2 error
 	}
 	countByStatusReturnsOnCall map[int]struct {
-		result1 int
+		result1 int64
 		result2 error
 	}
 	CreateStub        func(context.Context, repository.Blog) error
@@ -138,7 +138,7 @@ type FakeBlogRepository struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeBlogRepository) Count(arg1 context.Context) (int, error) {
+func (fake *FakeBlogRepository) Count(arg1 context.Context) (int64, error) {
 	fake.countMutex.Lock()
 	ret, specificReturn := fake.countReturnsOnCall[len(fake.countArgsForCall)]
 	fake.countArgsForCall = append(fake.countArgsForCall, struct {
@@ -163,7 +163,7 @@ func (fake *FakeBlogRepository) CountCallCount() int {
 	return len(fake.countArgsForCall)
 }
 
-func (fake *FakeBlogRepository) CountCalls(stub func(context.Context) (int, error)) {
+func (fake *FakeBlogRepository) CountCalls(stub func(context.Context) (int64, error)) {
 	fake.countMutex.Lock()
 	defer fake.countMutex.Unlock()
 	fake.CountStub = stub
@@ -176,33 +176,33 @@ func (fake *FakeBlogRepository) CountArgsForCall(i int) context.Context {
 	return argsForCall.arg1
 }
 
-func (fake *FakeBlogRepository) CountReturns(result1 int, result2 error) {
+func (fake *FakeBlogRepository) CountReturns(result1 int64, result2 error) {
 	fake.countMutex.Lock()
 	defer fake.countMutex.Unlock()
 	fake.CountStub = nil
 	fake.countReturns = struct {
-		result1 int
+		result1 int64
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBlogRepository) CountReturnsOnCall(i int, result1 int, result2 error) {
+func (fake *FakeBlogRepository) CountReturnsOnCall(i int, result1 int64, result2 error) {
 	fake.countMutex.Lock()
 	defer fake.countMutex.Unlock()
 	fake.CountStub = nil
 	if fake.countReturnsOnCall == nil {
 		fake.countReturnsOnCall = make(map[int]struct {
-			result1 int
+			result1 int64
 			result2 error
 		})
 	}
 	fake.countReturnsOnCall[i] = struct {
-		result1 int
+		result1 int64
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBlogRepository) CountByStatus(arg1 context.Context, arg2 string) (int, error) {
+func (fake *FakeBlogRepository) CountByStatus(arg1 context.Context, arg2 string) (int64, error) {
 	fake.countByStatusMutex.Lock()
 	ret, specificReturn := fake.countByStatusReturnsOnCall[len(fake.countByStatusArgsForCall)]
 	fake.countByStatusArgsForCall = append(fake.countByStatusArgsForCall, struct {
@@ -228,7 +228,7 @@ func (fake *FakeBlogRepository) CountByStatusCallCount() int {
 	return len(fake.countByStatusArgsForCall)
 }
 
-func (fake *FakeBlogRepository) CountByStatusCalls(stub func(context.Context, string) (int, error)) {
+func (fake *FakeBlogRepository) CountByStatusCalls(stub func(context.Context, string) (int64, error)) {
 	fake.countByStatusMutex.Lock()
 	defer fake.countByStatusMutex.Unlock()
 	fake.CountByStatusStub = stub
@@ -241,28 +241,28 @@ func (fake *FakeBlogRepository) CountByStatusArgsForCall(i int) (context.Context
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeBlogRepository) CountByStatusReturns(result1 int, result2 error) {
+func (fake *FakeBlogRepository) CountByStatusReturns(result1 int64, result2 error) {
 	fake.countByStatusMutex.Lock()
 	defer fake.countByStatusMutex.Unlock()
 	fake.CountByStatusStub = nil
 	fake.countByStatusReturns = struct {
-		result1 int
+		result1 int64
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBlogRepository) CountByStatusReturnsOnCall(i int, result1 int, result2 error) {
+func (fake *FakeBlogRepository) CountByStatusReturnsOnCall(i int, result1 int64, result2 error) {
 	fake.countByStatusMutex.Lock()
 	defer fake.countByStatusMutex.Unlock()
 	fake.CountByStatusStub = nil
 	if fake.countByStatusReturnsOnCall == nil {
 		fake.countByStatusReturnsOnCall = make(map[int]struct {
-			result1 int
+			result1 int64
 			result2 error
 		})
 	}
 	fake.countByStatusReturnsOnCall[i] = struct {
-		result1 int
+		result1 int64
 		result2 error
 	}{result1, result2}
 }
